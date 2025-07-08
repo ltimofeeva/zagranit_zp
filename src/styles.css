@@ -42,60 +42,34 @@ body {
   justify-content: space-between;
 }
 
-.daily-btn-main,
-.daily-btn-alt,
-.daily-btn-gray,
-.daily-btn-submit,
-.daily-btn-return {
+.daily-btn-main {
+  width: 100%;
+  padding: 11px 0;
+  margin-bottom: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 18px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.18s;
+  box-shadow: 0 2px 8px 0 rgba(60,80,160,0.08);
+}
+.daily-btn-main:hover { background: #1d4ed8; }
+
+.daily-btn-alt {
   width: 100%;
   padding: 11px 0;
   font-weight: 600;
   border: none;
   border-radius: 18px;
+  background: #10b981;
+  color: #fff;
   cursor: pointer;
   transition: background 0.18s;
-  box-shadow: 0 2px 8px 0 rgba(60,80,160,0.08);
+  box-shadow: 0 2px 8px 0 rgba(60,160,120,0.08);
 }
-
-.daily-btn-main {
-  background: #2563eb;
-  color: #fff;
-}
-.daily-btn-main:hover {
-  background: #1d4ed8;
-}
-
-.daily-btn-alt {
-  background: #10b981;
-  color: #fff;
-}
-.daily-btn-alt:hover {
-  background: #059669;
-}
-
-.daily-btn-gray {
-  background: #cbd5e1;
-  color: #334155;
-}
-.daily-btn-gray:hover {
-  background: #94a3b8;
-}
-
-.daily-btn-submit {
-  background: #10b981;
-  color: #fff;
-}
-.daily-btn-submit:hover {
-  background: #059669;
-}
-
-.daily-btn-return {
-  background: #2563eb;
-  color: #fff;
-}
-.daily-btn-return:hover {
-  background: #1d4ed8;
-}
+.daily-btn-alt:hover { background: #059669; }
 
 .daily-or {
   text-align: center;
@@ -106,18 +80,11 @@ body {
 .daily-field {
   margin-bottom: 13px;
 }
-
 .daily-field label {
   display: block;
   font-size: 1rem;
   margin-bottom: 3px;
 }
-
-.daily-input-wrapper {
-  position: relative;
-  width: 100%;
-}
-
 .daily-input, .daily-input[type="number"] {
   width: 100%;
   padding: 8px 11px;
@@ -133,17 +100,11 @@ body {
 }
 
 .daily-list-small {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 105%; /* чуть ниже инпута */
-  z-index: 100;
-  margin-top: 0;
+  margin-top: 2px;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 12px 0 rgba(30,80,180,0.07);
-  border: 1px solid #e5e7eb;
-  max-height: 180px;
+  max-height: 120px;
   overflow-y: auto;
 }
 .daily-list-small div {
@@ -174,28 +135,28 @@ body {
 .icon-btn:hover {
   opacity: 1;
 }
-
 .clear-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: -30px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  z-index: 4;
   opacity: 0.7;
   transition: opacity 0.15s;
+  padding: 0 4px;
+  z-index: 4;
 }
 .clear-btn:hover {
+  color: #f87171;
   opacity: 1;
 }
 
-.daily-edit-form .daily-input-wrapper {
-  width: 100%;
+
+
+.daily-btn-gray {
+  flex: 1;
+  padding: 11px 0;
+  font-weight: 600;
+  border: none;
+  border-radius: 18px;
+  background: #cbd5e1;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.16s;
 }
-.daily-edit-form .daily-input {
-  width: 100%;
-  box-sizing: border-box;
-}
+.daily-btn-gray:hover { background: #94a3b8; }
