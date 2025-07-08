@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
+// Получаем сегодняшнюю дату в формате ДД.ММ.ГГГГ
+const getToday = () => {
+  const d = new Date();
+  return d.toLocaleDateString("ru-RU");
+};
+
 export default function StoneDailyReport() {
   // Справочники из backend
   const [sizes, setSizes] = useState([]);
@@ -33,7 +39,7 @@ export default function StoneDailyReport() {
 
   const handleAddPosition = () => {
     if (!sizeInput || !vidInput || !kolvo) return;
-    setPositions([...positions, { size: sizeInput, vid: vidInput, qty: kolvo }]);
+    setPositions([...positions, { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo }]);
     setSizeInput("");
     setVidInput("");
     setKolvo("");
@@ -51,7 +57,7 @@ export default function StoneDailyReport() {
 
   const handleSubmit = async () => {
     // отправка в n8n/webhook
-    await fetch('https://your-n8n/webhook/stone-daily', {
+    await fetch('https://n8n.paderina-tech.ru/webhook-test/53b5e8c7-61a2-4164-a235-c79d25b95a11', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ positions }),
@@ -63,7 +69,8 @@ export default function StoneDailyReport() {
 
   return (
     <div className="daily-form-main">
-      <div className="daily-title">Форма ввода работ</div>
+      <div className="daily-title">Дата — {getToday()}</div>
+      <div className="daily-sub">Форма ввода работ</div>
       {/* форма добавления позиции */}
       {!isFinished && (
         <>
@@ -146,7 +153,7 @@ export default function StoneDailyReport() {
                 {positions.map((pos, i) => (
                   <li key={i}>
                     <span>
-                      {pos.size} — {pos.vid} — {pos.qty} шт.
+                      {pos.date} — {pos.size} — {pos.vid} — {pos.qty} шт.
                     </span>
                   </li>
                 ))}
@@ -162,7 +169,7 @@ export default function StoneDailyReport() {
             {positions.map((pos, i) => (
               <li key={i}>
                 <span>
-                  {pos.size} — {pos.vid} — {pos.qty} шт.
+                  {pos.date} — {pos.size} — {pos.vid} — {pos.qty} шт.
                 </span>
               </li>
             ))}
