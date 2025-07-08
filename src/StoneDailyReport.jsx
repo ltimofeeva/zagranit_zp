@@ -20,15 +20,16 @@ export default function StoneDailyReport() {
   const [isEditing, setIsEditing] = useState(false);
 
   // Получаем справочники с backend при загрузке формы
-  useEffect(() => {
-    async function fetchNomenclature() {
-      const res = await fetch('https://your-backend/nomenclature'); // твой endpoint!
-      const data = await res.json();
-      setSizes(data.sizes || []);
-      setVids(data.vids || []);
-    }
-    fetchNomenclature();
-  }, []);
+useEffect(() => {
+  async function fetchNomenclature() {
+    const res = await fetch('https://lpaderina.store/webhook/nomenklatura');
+    const data = await res.json();
+    setSizes(data.sizes || []);
+    setVids(data.vids || []);
+  }
+  fetchNomenclature();
+}, []);
+
 
   const filteredSizes = sizes.filter((s) =>
     s.toLowerCase().includes(sizeInput.toLowerCase())
