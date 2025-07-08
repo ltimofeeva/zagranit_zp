@@ -54,13 +54,23 @@ export default function StoneDailyReport() {
   };
 
   const handleSubmit = async () => {
-    alert(
-      "Отправлено в Google Sheets!\n" + JSON.stringify(positions, null, 2)
-    );
-    setPositions([]);
-    setShowForm(false);
-    setIsFinished(false);
-  };
+  // positions — твой массив с данными
+  try {
+    const response = await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ positions }),
+    });
+    if (response.ok) {
+      alert('Данные успешно отправлены!');
+      // Сбросить форму, если надо
+    } else {
+      alert('Ошибка при отправке!');
+    }
+  } catch (e) {
+    alert('Ошибка сети!');
+  }
+};
 
   return (
     <div className="daily-form-main">
