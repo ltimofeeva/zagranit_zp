@@ -135,6 +135,17 @@ body {
 .icon-btn:hover {
   opacity: 1;
 }
+.clear-btn {
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  padding: 0 4px;
+  z-index: 4;
+}
+.clear-btn:hover {
+  color: #f87171;
+  opacity: 1;
+}
+
 
 
 .daily-btn-gray {
