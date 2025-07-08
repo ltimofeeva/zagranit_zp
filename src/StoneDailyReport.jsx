@@ -70,7 +70,7 @@ export default function StoneDailyReport() {
   return (
     <div className="daily-form-main">
       <div className="daily-title">Дата — {getToday()}</div>
-      <div className="daily-sub">Форма ввода работ</div>
+      <div className="daily-sub">Введите позиции</div>
       {/* форма добавления позиции */}
       {!isFinished && (
         <>
