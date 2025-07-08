@@ -9,6 +9,8 @@ const getToday = () => {
 
 export default function StoneDailyReport() {
   // Справочники из backend
+  const [positions, setPositions] = useState([]);
+  const [vids, setVids] = useState([]); // если используешь vids
   const [bySize, setBySize] = useState({});
   const [sizes, setSizes] = useState([]);
   const [sizeInput, setSizeInput] = useState('');
