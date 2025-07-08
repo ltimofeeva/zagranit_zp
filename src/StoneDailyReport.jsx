@@ -3,15 +3,24 @@ import "./styles.css";
 
 // SVG-иконки (карандаш, мусорка, крестик)
 const PencilIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
+  <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+  </svg>
 );
 
 const TrashIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+  <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
 );
 
 const CrossIcon = () => (
-  <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  <svg width="16" height="16" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
 );
 
 const getToday = () => {
@@ -42,13 +51,9 @@ export default function StoneDailyReport() {
     fetchNomenclature();
   }, []);
 
-  const filteredSizes = sizes.filter((s) =>
-    s.toLowerCase().includes(sizeInput.toLowerCase())
-  );
+  const filteredSizes = sizes.filter((s) => s.toLowerCase().includes(sizeInput.toLowerCase()));
   const currentVidOptions = bySize[sizeInput] || [];
-  const filteredVids = currentVidOptions.filter((v) =>
-    v.toLowerCase().includes(vidInput.toLowerCase())
-  );
+  const filteredVids = currentVidOptions.filter((v) => v.toLowerCase().includes(vidInput.toLowerCase()));
 
   const handleSave = () => {
     if (
@@ -61,15 +66,18 @@ export default function StoneDailyReport() {
       alert("Выберите корректный размер и вид работы из списка!");
       return;
     }
+
     const item = { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo };
+
     if (editIndex !== null) {
       const updated = [...positions];
       updated[editIndex] = item;
       setPositions(updated);
       setEditIndex(null);
-    } else {
-      setPositions([...positions, item]);
+      return;
     }
+
+    setPositions([...positions, item]);
     setSizeInput("");
     setVidInput("");
     setKolvo("");
@@ -127,7 +135,118 @@ export default function StoneDailyReport() {
     setTimeout(() => setShowSuccess(false), 4000);
   };
 
-  // Сообщение "Спасибо за твой труд!"
+  const renderField = (label, value, setValue, showList, setShowList, list, disabled = false) => (
+    <div className="daily-field" style={{ position: "relative" }}>
+      <label>{label}</label>
+      <input
+        type={label === "Количество" ? "number" : "text"}
+        className="daily-input"
+        placeholder="Начните вводить или выберите..."
+        value={value}
+        onChange={e => {
+          setValue(e.target.value);
+          if (label !== "Количество") {
+            setShowList(true);
+            if (label === "Размер") setVidInput("");
+          }
+        }}
+        onFocus={() => setShowList(true)}
+        onBlur={() => setTimeout(() => setShowList(false), 100)}
+        autoComplete="off"
+        disabled={disabled}
+        min={label === "Количество" ? 1 : undefined}
+      />
+      {value && (
+        <button
+          type="button"
+          className="clear-btn"
+          onClick={() => setValue("")}
+          tabIndex={-1}
+          aria-label="Очистить поле"
+        >
+          <CrossIcon />
+        </button>
+      )}
+      {label !== "Количество" && (
+        <button
+          type="button"
+          className="combo-arrow"
+          style={{
+            position: "absolute",
+            right: 10,
+            top: 35,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            zIndex: 3
+          }}
+          tabIndex={-1}
+          onMouseDown={e => {
+            e.preventDefault();
+            setShowList(v => !v);
+          }}
+        >▼</button>
+      )}
+      {showList && list.length > 0 && (
+        <div className="daily-list-small" style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          zIndex: 2,
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 6,
+          maxHeight: 180,
+          overflowY: "auto"
+        }}>
+          {list.map((item, i) => (
+            <div
+              key={i}
+              onMouseDown={() => {
+                setValue(item);
+                setShowList(false);
+                if (label === "Размер") setVidInput("");
+              }}
+              style={{
+                padding: "8px 12px",
+                cursor: "pointer"
+              }}
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderForm = () => (
+    <div style={{ marginTop: 18 }}>
+      {renderField("Размер", sizeInput, setSizeInput, showSizes, setShowSizes, filteredSizes)}
+      {renderField("Вид работы", vidInput, setVidInput, showVids, setShowVids, filteredVids, !sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length))}
+      {renderField("Количество", kolvo, setKolvo, () => {}, () => {}, [])}
+      <div className="daily-flex">
+        <button
+          className="daily-btn-main"
+          onClick={handleSave}
+          disabled={!sizeInput || !vidInput || !kolvo}
+        >
+          Сохранить
+        </button>
+        {editIndex === null && (
+          <button
+            className="daily-btn-alt"
+            style={{ marginLeft: 8 }}
+            onClick={handleFinish}
+            disabled={positions.length === 0}
+          >
+            Завершить редактирование
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   if (showSuccess) {
     return (
       <div className="daily-form-main">
@@ -139,7 +258,6 @@ export default function StoneDailyReport() {
     );
   }
 
-  // Если завершено редактирование, показываем только строки и две кнопки
   if (isDone) {
     return (
       <div className="daily-form-main">
@@ -147,58 +265,23 @@ export default function StoneDailyReport() {
         <div className="daily-sub">Введённые позиции:</div>
         <ul className="daily-list" style={{ marginTop: 14 }}>
           {positions.map((pos, i) => (
-            <li key={i} style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 4,
-              justifyContent: "space-between"
-            }}>
-              <span>
-                {pos.size} {pos.vid} — {pos.qty} шт.
-              </span>
-              <span style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-                <button
-                  className="icon-btn"
-                  title="Редактировать"
-                  onClick={() => {
-                    setIsDone(false);
-                    handleEditPosition(i);
-                  }}
-                >
-                  <PencilIcon />
-                </button>
-                <button
-                  className="icon-btn"
-                  title="Удалить"
-                  onClick={() => handleDeletePosition(i)}
-                >
-                  <TrashIcon />
-                </button>
+            <li key={i}>
+              <span>{pos.size} {pos.vid} — {pos.qty} шт.</span>
+              <span style={{ display: "flex", gap: 8 }}>
+                <button className="icon-btn" onClick={() => { setIsDone(false); handleEditPosition(i); }}><PencilIcon /></button>
+                <button className="icon-btn" onClick={() => handleDeletePosition(i)}><TrashIcon /></button>
               </span>
             </li>
           ))}
         </ul>
         <div className="daily-flex" style={{ marginTop: 30 }}>
-          <button
-            className="daily-btn-alt"
-            onClick={handleReturnToEdit}
-          >
-            Вернуться к редактированию
-          </button>
-          <button
-            className="daily-btn-main"
-            style={{ marginLeft: 12 }}
-            onClick={handleSubmit}
-            disabled={positions.length === 0}
-          >
-            Отправить данные
-          </button>
+          <button className="daily-btn-alt" onClick={handleReturnToEdit}>Вернуться к редактированию</button>
+          <button className="daily-btn-main" style={{ marginLeft: 12 }} onClick={handleSubmit} disabled={positions.length === 0}>Отправить данные</button>
         </div>
       </div>
     );
   }
 
-  // Основной режим: список, форма редактирования (под строкой) и форма добавления
   return (
     <div className="daily-form-main">
       <div className="daily-title">Дата — {getToday()}</div>
@@ -206,471 +289,18 @@ export default function StoneDailyReport() {
       <ul className="daily-list" style={{ marginTop: 14 }}>
         {positions.map((pos, i) => (
           <React.Fragment key={i}>
-            <li style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 4,
-              justifyContent: "space-between"
-            }}>
-              <span>
-                {pos.size} {pos.vid} — {pos.qty} шт.
-              </span>
-              <span style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-                <button
-                  className="icon-btn"
-                  title="Редактировать"
-                  onClick={() => handleEditPosition(i)}
-                >
-                  <PencilIcon />
-                </button>
-                <button
-                  className="icon-btn"
-                  title="Удалить"
-                  onClick={() => handleDeletePosition(i)}
-                >
-                  <TrashIcon />
-                </button>
+            <li>
+              <span>{pos.size} {pos.vid} — {pos.qty} шт.</span>
+              <span style={{ display: "flex", gap: 8 }}>
+                <button className="icon-btn" onClick={() => handleEditPosition(i)}><PencilIcon /></button>
+                <button className="icon-btn" onClick={() => handleDeletePosition(i)}><TrashIcon /></button>
               </span>
             </li>
-            {editIndex === i && (
-              <li>
-                <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
-                  {/* Размер */}
-                  <div className="daily-field" style={{ position: "relative" }}>
-                    <label>Размер</label>
-                    <input
-                      type="text"
-                      className="daily-input"
-                      placeholder="Начните вводить или выберите..."
-                      value={sizeInput}
-                      onChange={e => {
-                        setSizeInput(e.target.value);
-                        setShowSizes(true);
-                        setVidInput("");
-                      }}
-                      onFocus={() => setShowSizes(true)}
-                      onBlur={() => setTimeout(() => setShowSizes(false), 100)}
-                      autoComplete="off"
-                    />
-                    {/* Крестик */}
-                    {sizeInput && (
-                      <button
-                        type="button"
-                        className="clear-btn"
-                        style={{
-                          position: "absolute",
-                          right: 36,
-                          top: 32,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                          zIndex: 4
-                        }}
-                        onClick={() => setSizeInput("")}
-                        tabIndex={-1}
-                        aria-label="Очистить поле"
-                      ><CrossIcon /></button>
-                    )}
-                    <button
-                      type="button"
-                      className="combo-arrow"
-                      style={{
-                        position: "absolute",
-                        right: 10,
-                        top: 35,
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        zIndex: 3
-                      }}
-                      tabIndex={-1}
-                      onMouseDown={e => {
-                        e.preventDefault();
-                        setShowSizes(v => !v);
-                      }}
-                    >▼</button>
-                    {showSizes && filteredSizes.length > 0 && (
-                      <div className="daily-list-small" style={{
-                        position: "absolute",
-                        left: 0,
-                        right: 0,
-                        zIndex: 2,
-                        background: "#fff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: 6,
-                        maxHeight: 180,
-                        overflowY: "auto"
-                      }}>
-                        {filteredSizes.map((s, i) => (
-                          <div
-                            key={i}
-                            onMouseDown={() => {
-                              setSizeInput(s);
-                              setShowSizes(false);
-                              setVidInput("");
-                            }}
-                            style={{
-                              padding: "8px 12px",
-                              cursor: "pointer"
-                            }}
-                          >
-                            {s}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {/* Вид работы */}
-                  <div className="daily-field" style={{ position: "relative" }}>
-                    <label>Вид работы</label>
-                    <input
-                      type="text"
-                      className="daily-input"
-                      placeholder="Начните вводить или выберите..."
-                      value={vidInput}
-                      onChange={e => {
-                        setVidInput(e.target.value);
-                        setShowVids(true);
-                      }}
-                      onFocus={() => setShowVids(true)}
-                      onBlur={() => setTimeout(() => setShowVids(false), 100)}
-                      autoComplete="off"
-                      disabled={!sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length)}
-                    />
-                    {vidInput && (
-                      <button
-                        type="button"
-                        className="clear-btn"
-                        style={{
-                          position: "absolute",
-                          right: 36,
-                          top: 32,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                          zIndex: 4
-                        }}
-                        onClick={() => setVidInput("")}
-                        tabIndex={-1}
-                        aria-label="Очистить поле"
-                      ><CrossIcon /></button>
-                    )}
-                    <button
-                      type="button"
-                      className="combo-arrow"
-                      style={{
-                        position: "absolute",
-                        right: 10,
-                        top: 35,
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        zIndex: 3
-                      }}
-                      tabIndex={-1}
-                      onMouseDown={e => {
-                        e.preventDefault();
-                        setShowVids(v => !v);
-                      }}
-                    >▼</button>
-                    {showVids && filteredVids.length > 0 && (
-                      <div className="daily-list-small" style={{
-                        position: "absolute",
-                        left: 0,
-                        right: 0,
-                        zIndex: 2,
-                        background: "#fff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: 6,
-                        maxHeight: 180,
-                        overflowY: "auto"
-                      }}>
-                        {filteredVids.map((v, i) => (
-                          <div
-                            key={i}
-                            onMouseDown={() => {
-                              setVidInput(v);
-                              setShowVids(false);
-                            }}
-                            style={{
-                              padding: "8px 12px",
-                              cursor: "pointer"
-                            }}
-                          >
-                            {v}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {/* Количество */}
-                  <div className="daily-field" style={{ position: "relative" }}>
-                    <label>Количество</label>
-                    <input
-                      type="number"
-                      className="daily-input"
-                      min="1"
-                      value={kolvo}
-                      onChange={(e) => setKolvo(e.target.value)}
-                    />
-                    {kolvo && (
-                      <button
-                        type="button"
-                        className="clear-btn"
-                        style={{
-                          position: "absolute",
-                          right: 10,
-                          top: 32,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                          zIndex: 4
-                        }}
-                        onClick={() => setKolvo("")}
-                        tabIndex={-1}
-                        aria-label="Очистить поле"
-                      ><CrossIcon /></button>
-                    )}
-                  </div>
-                  <div className="daily-flex">
-                    <button
-                      className="daily-btn-main"
-                      onClick={handleSave}
-                      disabled={!sizeInput || !vidInput || !kolvo}
-                    >
-                      Сохранить
-                    </button>
-                  </div>
-                </div>
-              </li>
-            )}
+            {editIndex === i && <li>{renderForm()}</li>}
           </React.Fragment>
         ))}
       </ul>
-      {/* Форма добавления новой позиции (только если не редактируем) */}
-      {editIndex === null && (
-        <div style={{ marginTop: 18 }}>
-          {/* Размер */}
-          <div className="daily-field" style={{ position: "relative" }}>
-            <label>Размер</label>
-            <input
-              type="text"
-              className="daily-input"
-              placeholder="Начните вводить или выберите..."
-              value={sizeInput}
-              onChange={e => {
-                setSizeInput(e.target.value);
-                setShowSizes(true);
-                setVidInput("");
-              }}
-              onFocus={() => setShowSizes(true)}
-              onBlur={() => setTimeout(() => setShowSizes(false), 100)}
-              autoComplete="off"
-            />
-            {sizeInput && (
-              <button
-                type="button"
-                className="clear-btn"
-                style={{
-                  position: "absolute",
-                  right: 36,
-                  top: 32,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  zIndex: 4
-                }}
-                onClick={() => setSizeInput("")}
-                tabIndex={-1}
-                aria-label="Очистить поле"
-              ><CrossIcon /></button>
-            )}
-            <button
-              type="button"
-              className="combo-arrow"
-              style={{
-                position: "absolute",
-                right: 10,
-                top: 35,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                zIndex: 3
-              }}
-              tabIndex={-1}
-              onMouseDown={e => {
-                e.preventDefault();
-                setShowSizes(v => !v);
-              }}
-            >▼</button>
-            {showSizes && filteredSizes.length > 0 && (
-              <div className="daily-list-small" style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                zIndex: 2,
-                background: "#fff",
-                border: "1px solid #e5e7eb",
-                borderRadius: 6,
-                maxHeight: 180,
-                overflowY: "auto"
-              }}>
-                {filteredSizes.map((s, i) => (
-                  <div
-                    key={i}
-                    onMouseDown={() => {
-                      setSizeInput(s);
-                      setShowSizes(false);
-                      setVidInput("");
-                    }}
-                    style={{
-                      padding: "8px 12px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {s}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Вид работы */}
-          <div className="daily-field" style={{ position: "relative" }}>
-            <label>Вид работы</label>
-            <input
-              type="text"
-              className="daily-input"
-              placeholder="Начните вводить или выберите..."
-              value={vidInput}
-              onChange={e => {
-                setVidInput(e.target.value);
-                setShowVids(true);
-              }}
-              onFocus={() => setShowVids(true)}
-              onBlur={() => setTimeout(() => setShowVids(false), 100)}
-              autoComplete="off"
-              disabled={!sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length)}
-            />
-            {vidInput && (
-              <button
-                type="button"
-                className="clear-btn"
-                style={{
-                  position: "absolute",
-                  right: 36,
-                  top: 32,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  zIndex: 4
-                }}
-                onClick={() => setVidInput("")}
-                tabIndex={-1}
-                aria-label="Очистить поле"
-              ><CrossIcon /></button>
-            )}
-            <button
-              type="button"
-              className="combo-arrow"
-              style={{
-                position: "absolute",
-                right: 10,
-                top: 35,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                zIndex: 3
-              }}
-              tabIndex={-1}
-              onMouseDown={e => {
-                e.preventDefault();
-                setShowVids(v => !v);
-              }}
-            >▼</button>
-            {showVids && filteredVids.length > 0 && (
-              <div className="daily-list-small" style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                zIndex: 2,
-                background: "#fff",
-                border: "1px solid #e5e7eb",
-                borderRadius: 6,
-                maxHeight: 180,
-                overflowY: "auto"
-              }}>
-                {filteredVids.map((v, i) => (
-                  <div
-                    key={i}
-                    onMouseDown={() => {
-                      setVidInput(v);
-                      setShowVids(false);
-                    }}
-                    style={{
-                      padding: "8px 12px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {v}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Количество */}
-          <div className="daily-field" style={{ position: "relative" }}>
-            <label>Количество</label>
-            <input
-              type="number"
-              className="daily-input"
-              min="1"
-              value={kolvo}
-              onChange={(e) => setKolvo(e.target.value)}
-            />
-            {kolvo && (
-              <button
-                type="button"
-                className="clear-btn"
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: 32,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  zIndex: 4
-                }}
-                onClick={() => setKolvo("")}
-                tabIndex={-1}
-                aria-label="Очистить поле"
-              ><CrossIcon /></button>
-            )}
-          </div>
-          <div className="daily-flex">
-            <button
-              className="daily-btn-main"
-              onClick={handleSave}
-              disabled={!sizeInput || !vidInput || !kolvo}
-            >
-              Сохранить
-            </button>
-            <button
-              className="daily-btn-alt"
-              style={{ marginLeft: 8 }}
-              onClick={handleFinish}
-              disabled={positions.length === 0}
-            >
-              Завершить редактирование
-            </button>
-          </div>
-        </div>
-      )}
+      {editIndex === null && renderForm()}
     </div>
   );
 }
