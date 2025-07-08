@@ -9,23 +9,22 @@ const getToday = () => {
 
 export default function StoneDailyReport() {
   // Справочники из backend
+  const [bySize, setBySize] = useState({});
   const [sizes, setSizes] = useState([]);
-  const [vids, setVids] = useState([]);
-  // Выбранные значения
-  const [positions, setPositions] = useState([]);
-  const [sizeInput, setSizeInput] = useState("");
-  const [vidInput, setVidInput] = useState("");
+  const [sizeInput, setSizeInput] = useState('');
+  const [vidInput, setVidInput] = useState('');
+  const [availableVids, setAvailableVids] = useState([]);
   const [kolvo, setKolvo] = useState("");
   const [isFinished, setIsFinished] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   // Получаем справочники с backend при загрузке формы
-useEffect(() => {
+  useEffect(() => {
   async function fetchNomenclature() {
     const res = await fetch('https://lpaderina.store/webhook/nomenklatura');
     const data = await res.json();
-    setSizes(data.sizes || []);
-    setVids(data.vids || []);
+    setBySize(data.bySize || {});
+    setSizes(Object.keys(data.bySize || {}));
   }
   fetchNomenclature();
 }, []);
@@ -71,7 +70,7 @@ useEffect(() => {
   return (
     <div className="daily-form-main">
       <div className="daily-title">Дата — {getToday()}</div>
-      <div className="daily-sub">Введите позиции</div>
+      <div className="daily-sub">Введите позиции!</div>
       {/* форма добавления позиции */}
       {!isFinished && (
         <>
