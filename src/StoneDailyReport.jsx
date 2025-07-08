@@ -180,13 +180,13 @@ export default function StoneDailyReport() {
         </ul>
         <div className="daily-flex" style={{ marginTop: 30 }}>
           <button
-            className="daily-btn-alt"
+            className="daily-btn-main"
             onClick={handleReturnToEdit}
           >
             Вернуться к редактированию
           </button>
           <button
-            className="daily-btn-main"
+            className="daily-btn-alt"
             onClick={handleSubmit}
             disabled={positions.length === 0}
           >
