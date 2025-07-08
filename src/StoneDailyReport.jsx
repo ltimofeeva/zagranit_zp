@@ -10,32 +10,34 @@ const getToday = () => {
 export default function StoneDailyReport() {
   // Справочники из backend
   const [positions, setPositions] = useState([]);
-  const [vids, setVids] = useState([]); // если используешь vids
   const [bySize, setBySize] = useState({});
   const [sizes, setSizes] = useState([]);
   const [sizeInput, setSizeInput] = useState('');
   const [vidInput, setVidInput] = useState('');
-  const [availableVids, setAvailableVids] = useState([]);
   const [kolvo, setKolvo] = useState("");
   const [isFinished, setIsFinished] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   // Получаем справочники с backend при загрузке формы
   useEffect(() => {
-  async function fetchNomenclature() {
-    const res = await fetch('https://lpaderina.store/webhook/nomenklatura');
-    const data = await res.json();
-    setBySize(data.bySize || {});
-    setSizes(Object.keys(data.bySize || {}));
-  }
-  fetchNomenclature();
-}, []);
+    async function fetchNomenclature() {
+      const res = await fetch('https://lpaderina.store/webhook/nomenklatura');
+      const data = await res.json();
+      setBySize(data.bySize || {});
+      setSizes(Object.keys(data.bySize || {}));
+    }
+    fetchNomenclature();
+  }, []);
 
-
+  // Фильтрация размеров по вводу
   const filteredSizes = sizes.filter((s) =>
     s.toLowerCase().includes(sizeInput.toLowerCase())
   );
-  const filteredVids = vids.filter((v) =>
+  // Виды работ для выбранного размера (без фильтра по вводу)
+  const currentVidOptions = bySize[sizeInput] || [];
+
+  // Если нужен фильтр по вводу вида работ:
+  const filteredVids = currentVidOptions.filter((v) =>
     v.toLowerCase().includes(vidInput.toLowerCase())
   );
 
@@ -84,18 +86,18 @@ export default function StoneDailyReport() {
               className="daily-input"
               placeholder="Начните вводить..."
               value={sizeInput}
-              onChange={(e) => setSizeInput(e.target.value)}
+              onChange={(e) => {
+                setSizeInput(e.target.value);
+                setVidInput(''); // сбрасываем вид работы при смене размера
+              }}
               disabled={isFinished && !isEditing}
+              list="sizes-list"
             />
-            {sizeInput && filteredSizes.length > 0 && (
-              <div className="daily-list-small">
-                {filteredSizes.map((s, i) => (
-                  <div key={i} onClick={() => setSizeInput(s)}>
-                    {s}
-                  </div>
-                ))}
-              </div>
-            )}
+            <datalist id="sizes-list">
+              {filteredSizes.map((s, i) => (
+                <option value={s} key={i} />
+              ))}
+            </datalist>
           </div>
           {/* Вид работы */}
           <div className="daily-field">
@@ -106,17 +108,14 @@ export default function StoneDailyReport() {
               placeholder="Начните вводить..."
               value={vidInput}
               onChange={(e) => setVidInput(e.target.value)}
-              disabled={isFinished && !isEditing}
+              disabled={!sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length) || (isFinished && !isEditing)}
+              list="vids-list"
             />
-            {vidInput && filteredVids.length > 0 && (
-              <div className="daily-list-small">
-                {filteredVids.map((v, i) => (
-                  <div key={i} onClick={() => setVidInput(v)}>
-                    {v}
-                  </div>
-                ))}
-              </div>
-            )}
+            <datalist id="vids-list">
+              {filteredVids.map((v, i) => (
+                <option value={v} key={i} />
+              ))}
+            </datalist>
           </div>
           {/* Количество */}
           <div className="daily-field">
