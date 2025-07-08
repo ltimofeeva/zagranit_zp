@@ -187,7 +187,6 @@ export default function StoneDailyReport() {
           </button>
           <button
             className="daily-btn-main"
-            style={{ marginLeft: 12 }}
             onClick={handleSubmit}
             disabled={positions.length === 0}
           >
