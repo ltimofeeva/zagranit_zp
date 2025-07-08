@@ -39,13 +39,13 @@ body {
   margin-bottom: 5px;
   font-size: 1rem;
   display: flex;
+  align-items: center;
   justify-content: space-between;
 }
 
 .daily-btn-main {
   width: 100%;
   padding: 11px 0;
-  margin-bottom: 12px;
   font-weight: 600;
   border: none;
   border-radius: 18px;
@@ -54,8 +54,18 @@ body {
   cursor: pointer;
   transition: background 0.18s;
   box-shadow: 0 2px 8px 0 rgba(60,80,160,0.08);
+  font-size: 16px;
+  min-width: 160px;
+  min-height: 42px;
 }
 .daily-btn-main:hover { background: #1d4ed8; }
+
+.daily-btn-main[style*="#22c55e"] {
+  background: #22c55e !important;
+}
+.daily-btn-main[style*="#22c55e"]:hover {
+  background: #16a34a !important;
+}
 
 .daily-btn-alt {
   width: 100%;
@@ -63,13 +73,16 @@ body {
   font-weight: 600;
   border: none;
   border-radius: 18px;
-  background: #10b981;
+  background: #22c55e;
   color: #fff;
   cursor: pointer;
   transition: background 0.18s;
   box-shadow: 0 2px 8px 0 rgba(60,160,120,0.08);
+  font-size: 16px;
+  min-width: 160px;
+  min-height: 42px;
 }
-.daily-btn-alt:hover { background: #059669; }
+.daily-btn-alt:hover { background: #16a34a; }
 
 .daily-or {
   text-align: center;
@@ -106,6 +119,10 @@ body {
   box-shadow: 0 2px 12px 0 rgba(30,80,180,0.07);
   max-height: 120px;
   overflow-y: auto;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  z-index: 15;
 }
 .daily-list-small div {
   padding: 7px 14px;
@@ -131,22 +148,44 @@ body {
   align-items: center;
   opacity: 0.7;
   transition: opacity 0.1s;
+  min-width: 38px;
+  min-height: 38px;
+  justify-content: center;
 }
 .icon-btn:hover {
   opacity: 1;
 }
+
 .clear-btn {
-  opacity: 0.7;
-  transition: opacity 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
   padding: 0 4px;
-  z-index: 4;
+  z-index: 10;
+  opacity: 0.85;
+  margin-left: 8px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 .clear-btn:hover {
-  color: #f87171;
+  color: #ef4444;
   opacity: 1;
 }
 
-
+.combo-arrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #6366f1;
+  opacity: 0.7;
+  padding: 0 2px;
+  margin-left: 8px;
+}
+.combo-arrow:hover {
+  opacity: 1;
+}
 
 .daily-btn-gray {
   flex: 1;
@@ -160,3 +199,13 @@ body {
   transition: background 0.16s;
 }
 .daily-btn-gray:hover { background: #94a3b8; }
+
+/* Для редактируемой формы — поля на всю ширину */
+.daily-edit-form input {
+  width: 100%;
+  min-width: 0;
+}
+.daily-edit-form .daily-field > div,
+.daily-edit-form .daily-field {
+  width: 100%;
+}
