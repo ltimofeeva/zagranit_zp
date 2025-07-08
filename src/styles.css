@@ -133,11 +133,17 @@ body {
 }
 
 .daily-list-small {
-  margin-top: 2px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 105%; /* чуть ниже инпута */
+  z-index: 100;
+  margin-top: 0;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 12px 0 rgba(30,80,180,0.07);
-  max-height: 120px;
+  border: 1px solid #e5e7eb;
+  max-height: 180px;
   overflow-y: auto;
 }
 .daily-list-small div {
