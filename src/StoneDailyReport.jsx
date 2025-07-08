@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-// SVG-иконки (карандаш, мусорка, крестик)
+// SVG-иконки
 const PencilIcon = () => (
   <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
     <path d="M12 20h9" />
@@ -23,10 +23,7 @@ const CrossIcon = () => (
   </svg>
 );
 
-const getToday = () => {
-  const d = new Date();
-  return d.toLocaleDateString("ru-RU");
-};
+const getToday = () => new Date().toLocaleDateString("ru-RU");
 
 export default function StoneDailyReport() {
   const [positions, setPositions] = useState([]);
@@ -74,6 +71,9 @@ export default function StoneDailyReport() {
       updated[editIndex] = item;
       setPositions(updated);
       setEditIndex(null);
+      setSizeInput("");
+      setVidInput("");
+      setKolvo("");
       return;
     }
 
@@ -136,69 +136,41 @@ export default function StoneDailyReport() {
   };
 
   const renderField = (label, value, setValue, showList, setShowList, list, disabled = false) => (
-    <div className="daily-field" style={{ position: "relative" }}>
+    <div className="daily-field">
       <label>{label}</label>
-      <input
-        type={label === "Количество" ? "number" : "text"}
-        className="daily-input"
-        placeholder="Начните вводить или выберите..."
-        value={value}
-        onChange={e => {
-          setValue(e.target.value);
-          if (label !== "Количество") {
-            setShowList(true);
-            if (label === "Размер") setVidInput("");
-          }
-        }}
-        onFocus={() => setShowList(true)}
-        onBlur={() => setTimeout(() => setShowList(false), 100)}
-        autoComplete="off"
-        disabled={disabled}
-        min={label === "Количество" ? 1 : undefined}
-      />
-      {value && (
-        <button
-          type="button"
-          className="clear-btn"
-          onClick={() => setValue("")}
-          tabIndex={-1}
-          aria-label="Очистить поле"
-        >
-          <CrossIcon />
-        </button>
-      )}
-      {label !== "Количество" && (
-        <button
-          type="button"
-          className="combo-arrow"
-          style={{
-            position: "absolute",
-            right: 10,
-            top: 35,
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            zIndex: 3
+      <div className="daily-input-wrapper">
+        <input
+          type={label === "Количество" ? "number" : "text"}
+          className="daily-input"
+          placeholder="Начните вводить или выберите..."
+          value={value}
+          onChange={e => {
+            setValue(e.target.value);
+            if (label !== "Количество") {
+              setShowList(true);
+              if (label === "Размер") setVidInput("");
+            }
           }}
-          tabIndex={-1}
-          onMouseDown={e => {
-            e.preventDefault();
-            setShowList(v => !v);
-          }}
-        >▼</button>
-      )}
-      {showList && list.length > 0 && (
-        <div className="daily-list-small" style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          zIndex: 2,
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: 6,
-          maxHeight: 180,
-          overflowY: "auto"
-        }}>
+          onFocus={() => setShowList(true)}
+          onBlur={() => setTimeout(() => setShowList(false), 100)}
+          autoComplete="off"
+          disabled={disabled}
+          min={label === "Количество" ? 1 : undefined}
+        />
+        {value && (
+          <button
+            type="button"
+            className="clear-btn"
+            onClick={() => setValue("")}
+            tabIndex={-1}
+            aria-label="Очистить поле"
+          >
+            <CrossIcon />
+          </button>
+        )}
+      </div>
+      {label !== "Количество" && showList && list.length > 0 && (
+        <div className="daily-list-small">
           {list.map((item, i) => (
             <div
               key={i}
@@ -207,10 +179,7 @@ export default function StoneDailyReport() {
                 setShowList(false);
                 if (label === "Размер") setVidInput("");
               }}
-              style={{
-                padding: "8px 12px",
-                cursor: "pointer"
-              }}
+              style={{ padding: "8px 12px", cursor: "pointer" }}
             >
               {item}
             </div>
@@ -221,25 +190,16 @@ export default function StoneDailyReport() {
   );
 
   const renderForm = () => (
-    <div style={{ marginTop: 18 }}>
+    <div className={`daily-edit-form`} style={{ marginTop: 18 }}>
       {renderField("Размер", sizeInput, setSizeInput, showSizes, setShowSizes, filteredSizes)}
       {renderField("Вид работы", vidInput, setVidInput, showVids, setShowVids, filteredVids, !sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length))}
       {renderField("Количество", kolvo, setKolvo, () => {}, () => {}, [])}
       <div className="daily-flex">
-        <button
-          className="daily-btn-main"
-          onClick={handleSave}
-          disabled={!sizeInput || !vidInput || !kolvo}
-        >
+        <button className="daily-btn-main" onClick={handleSave} disabled={!sizeInput || !vidInput || !kolvo}>
           Сохранить
         </button>
         {editIndex === null && (
-          <button
-            className="daily-btn-alt"
-            style={{ marginLeft: 8 }}
-            onClick={handleFinish}
-            disabled={positions.length === 0}
-          >
+          <button className="daily-btn-alt" style={{ marginLeft: 8 }} onClick={handleFinish} disabled={positions.length === 0}>
             Завершить редактирование
           </button>
         )}
@@ -275,8 +235,12 @@ export default function StoneDailyReport() {
           ))}
         </ul>
         <div className="daily-flex" style={{ marginTop: 30 }}>
-          <button className="daily-btn-alt" onClick={handleReturnToEdit}>Вернуться к редактированию</button>
-          <button className="daily-btn-main" style={{ marginLeft: 12 }} onClick={handleSubmit} disabled={positions.length === 0}>Отправить данные</button>
+          <button className="daily-btn-return" onClick={handleReturnToEdit}>
+            Вернуться к редактированию
+          </button>
+          <button className="daily-btn-submit" style={{ marginLeft: 12 }} onClick={handleSubmit} disabled={positions.length === 0}>
+            Отправить данные
+          </button>
         </div>
       </div>
     );
