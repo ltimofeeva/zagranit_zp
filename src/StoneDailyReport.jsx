@@ -175,7 +175,7 @@ export default function StoneDailyReport() {
         </ul>
         <div className="daily-flex" style={{ marginTop: 30 }}>
           <button
-            className="daily-btn-alt daily-btn-small"
+            className="daily-btn-main daily-btn-small"
             onClick={handleReturnToEdit}
           >
             Вернуться к редактированию
