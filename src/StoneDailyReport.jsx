@@ -13,7 +13,9 @@ export default function StoneDailyReport() {
   const [bySize, setBySize] = useState({});
   const [sizes, setSizes] = useState([]);
   const [sizeInput, setSizeInput] = useState('');
+  const [showSizes, setShowSizes] = useState(false);
   const [vidInput, setVidInput] = useState('');
+  const [showVids, setShowVids] = useState(false);
   const [kolvo, setKolvo] = useState("");
   const [isFinished, setIsFinished] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -33,16 +35,24 @@ export default function StoneDailyReport() {
   const filteredSizes = sizes.filter((s) =>
     s.toLowerCase().includes(sizeInput.toLowerCase())
   );
-  // Виды работ для выбранного размера (без фильтра по вводу)
+  // Виды работ для выбранного размера
   const currentVidOptions = bySize[sizeInput] || [];
-
-  // Если нужен фильтр по вводу вида работ:
   const filteredVids = currentVidOptions.filter((v) =>
     v.toLowerCase().includes(vidInput.toLowerCase())
   );
 
   const handleAddPosition = () => {
-    if (!sizeInput || !vidInput || !kolvo) return;
+    // Проверка: размер и вид должны быть выбраны из справочника
+    if (
+      !sizeInput ||
+      !vidInput ||
+      !kolvo ||
+      !sizes.includes(sizeInput) ||
+      !(bySize[sizeInput] || []).includes(vidInput)
+    ) {
+      alert("Выберите корректный размер и вид работы из списка!");
+      return;
+    }
     setPositions([...positions, { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo }]);
     setSizeInput("");
     setVidInput("");
@@ -75,47 +85,139 @@ export default function StoneDailyReport() {
     <div className="daily-form-main">
       <div className="daily-title">Дата — {getToday()}</div>
       <div className="daily-sub">Введите позиции!</div>
-      {/* форма добавления позиции */}
       {!isFinished && (
         <>
           {/* Размер */}
-          <div className="daily-field">
+          <div className="daily-field" style={{ position: "relative" }}>
             <label>Размер</label>
             <input
               type="text"
               className="daily-input"
-              placeholder="Начните вводить..."
+              placeholder="Начните вводить или выберите..."
               value={sizeInput}
-              onChange={(e) => {
+              onChange={e => {
                 setSizeInput(e.target.value);
-                setVidInput(''); // сбрасываем вид работы при смене размера
+                setShowSizes(true);
+                setVidInput("");
               }}
+              onFocus={() => setShowSizes(true)}
+              onBlur={() => setTimeout(() => setShowSizes(false), 100)}
+              autoComplete="off"
               disabled={isFinished && !isEditing}
-              list="sizes-list"
             />
-            <datalist id="sizes-list">
-              {filteredSizes.map((s, i) => (
-                <option value={s} key={i} />
-              ))}
-            </datalist>
+            <button
+              type="button"
+              className="combo-arrow"
+              style={{
+                position: "absolute",
+                right: 10,
+                top: 35,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 3
+              }}
+              tabIndex={-1}
+              onMouseDown={e => {
+                e.preventDefault();
+                setShowSizes(v => !v);
+              }}
+            >▼</button>
+            {showSizes && filteredSizes.length > 0 && (
+              <div className="daily-list-small" style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                zIndex: 2,
+                background: "#fff",
+                border: "1px solid #e5e7eb",
+                borderRadius: 6,
+                maxHeight: 180,
+                overflowY: "auto"
+              }}>
+                {filteredSizes.map((s, i) => (
+                  <div
+                    key={i}
+                    onMouseDown={() => {
+                      setSizeInput(s);
+                      setShowSizes(false);
+                      setVidInput("");
+                    }}
+                    style={{
+                      padding: "8px 12px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {s}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {/* Вид работы */}
-          <div className="daily-field">
+          <div className="daily-field" style={{ position: "relative" }}>
             <label>Вид работы</label>
             <input
               type="text"
               className="daily-input"
-              placeholder="Начните вводить..."
+              placeholder="Начните вводить или выберите..."
               value={vidInput}
-              onChange={(e) => setVidInput(e.target.value)}
+              onChange={e => {
+                setVidInput(e.target.value);
+                setShowVids(true);
+              }}
+              onFocus={() => setShowVids(true)}
+              onBlur={() => setTimeout(() => setShowVids(false), 100)}
+              autoComplete="off"
               disabled={!sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length) || (isFinished && !isEditing)}
-              list="vids-list"
             />
-            <datalist id="vids-list">
-              {filteredVids.map((v, i) => (
-                <option value={v} key={i} />
-              ))}
-            </datalist>
+            <button
+              type="button"
+              className="combo-arrow"
+              style={{
+                position: "absolute",
+                right: 10,
+                top: 35,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 3
+              }}
+              tabIndex={-1}
+              onMouseDown={e => {
+                e.preventDefault();
+                setShowVids(v => !v);
+              }}
+            >▼</button>
+            {showVids && filteredVids.length > 0 && (
+              <div className="daily-list-small" style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                zIndex: 2,
+                background: "#fff",
+                border: "1px solid #e5e7eb",
+                borderRadius: 6,
+                maxHeight: 180,
+                overflowY: "auto"
+              }}>
+                {filteredVids.map((v, i) => (
+                  <div
+                    key={i}
+                    onMouseDown={() => {
+                      setVidInput(v);
+                      setShowVids(false);
+                    }}
+                    style={{
+                      padding: "8px 12px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {v}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {/* Количество */}
           <div className="daily-field">
