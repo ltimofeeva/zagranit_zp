@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-// SVG-иконки (карандаш, мусорка, крестик)
+// SVG-иконки
 const PencilIcon = () => (
   <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
 );
@@ -147,12 +147,7 @@ export default function StoneDailyReport() {
         <div className="daily-sub">Введённые позиции:</div>
         <ul className="daily-list" style={{ marginTop: 14 }}>
           {positions.map((pos, i) => (
-            <li key={i} style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 4,
-              justifyContent: "space-between"
-            }}>
+            <li key={i}>
               <span>
                 {pos.size} {pos.vid} — {pos.qty} шт.
               </span>
@@ -180,13 +175,13 @@ export default function StoneDailyReport() {
         </ul>
         <div className="daily-flex" style={{ marginTop: 30 }}>
           <button
-            className="daily-btn-main"
+            className="daily-btn-alt daily-btn-small"
             onClick={handleReturnToEdit}
           >
             Вернуться к редактированию
           </button>
           <button
-            className="daily-btn-alt"
+            className="daily-btn-alt daily-btn-small"
             onClick={handleSubmit}
             disabled={positions.length === 0}
           >
@@ -205,12 +200,7 @@ export default function StoneDailyReport() {
       <ul className="daily-list" style={{ marginTop: 14 }}>
         {positions.map((pos, i) => (
           <React.Fragment key={i}>
-            <li style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 4,
-              justifyContent: "space-between"
-            }}>
+            <li>
               <span>
                 {pos.size} {pos.vid} — {pos.qty} шт.
               </span>
@@ -251,21 +241,10 @@ export default function StoneDailyReport() {
                       onBlur={() => setTimeout(() => setShowSizes(false), 100)}
                       autoComplete="off"
                     />
-                    {/* Крестик */}
                     {sizeInput && (
                       <button
                         type="button"
                         className="clear-btn"
-                        style={{
-                          position: "absolute",
-                          right: 36,
-                          top: 32,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                          zIndex: 4
-                        }}
                         onClick={() => setSizeInput("")}
                         tabIndex={-1}
                         aria-label="Очистить поле"
@@ -274,15 +253,6 @@ export default function StoneDailyReport() {
                     <button
                       type="button"
                       className="combo-arrow"
-                      style={{
-                        position: "absolute",
-                        right: 10,
-                        top: 35,
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        zIndex: 3
-                      }}
                       tabIndex={-1}
                       onMouseDown={e => {
                         e.preventDefault();
@@ -290,17 +260,7 @@ export default function StoneDailyReport() {
                       }}
                     >▼</button>
                     {showSizes && filteredSizes.length > 0 && (
-                      <div className="daily-list-small" style={{
-                        position: "absolute",
-                        left: 0,
-                        right: 0,
-                        zIndex: 2,
-                        background: "#fff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: 6,
-                        maxHeight: 180,
-                        overflowY: "auto"
-                      }}>
+                      <div className="daily-list-small">
                         {filteredSizes.map((s, i) => (
                           <div
                             key={i}
@@ -308,10 +268,6 @@ export default function StoneDailyReport() {
                               setSizeInput(s);
                               setShowSizes(false);
                               setVidInput("");
-                            }}
-                            style={{
-                              padding: "8px 12px",
-                              cursor: "pointer"
                             }}
                           >
                             {s}
@@ -341,16 +297,6 @@ export default function StoneDailyReport() {
                       <button
                         type="button"
                         className="clear-btn"
-                        style={{
-                          position: "absolute",
-                          right: 36,
-                          top: 32,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                          zIndex: 4
-                        }}
                         onClick={() => setVidInput("")}
                         tabIndex={-1}
                         aria-label="Очистить поле"
@@ -359,15 +305,6 @@ export default function StoneDailyReport() {
                     <button
                       type="button"
                       className="combo-arrow"
-                      style={{
-                        position: "absolute",
-                        right: 10,
-                        top: 35,
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        zIndex: 3
-                      }}
                       tabIndex={-1}
                       onMouseDown={e => {
                         e.preventDefault();
@@ -375,27 +312,13 @@ export default function StoneDailyReport() {
                       }}
                     >▼</button>
                     {showVids && filteredVids.length > 0 && (
-                      <div className="daily-list-small" style={{
-                        position: "absolute",
-                        left: 0,
-                        right: 0,
-                        zIndex: 2,
-                        background: "#fff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: 6,
-                        maxHeight: 180,
-                        overflowY: "auto"
-                      }}>
+                      <div className="daily-list-small">
                         {filteredVids.map((v, i) => (
                           <div
                             key={i}
                             onMouseDown={() => {
                               setVidInput(v);
                               setShowVids(false);
-                            }}
-                            style={{
-                              padding: "8px 12px",
-                              cursor: "pointer"
                             }}
                           >
                             {v}
@@ -418,16 +341,6 @@ export default function StoneDailyReport() {
                       <button
                         type="button"
                         className="clear-btn"
-                        style={{
-                          position: "absolute",
-                          right: 10,
-                          top: 32,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                          zIndex: 4
-                        }}
                         onClick={() => setKolvo("")}
                         tabIndex={-1}
                         aria-label="Очистить поле"
@@ -473,16 +386,6 @@ export default function StoneDailyReport() {
               <button
                 type="button"
                 className="clear-btn"
-                style={{
-                  position: "absolute",
-                  right: 36,
-                  top: 32,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  zIndex: 4
-                }}
                 onClick={() => setSizeInput("")}
                 tabIndex={-1}
                 aria-label="Очистить поле"
@@ -491,15 +394,6 @@ export default function StoneDailyReport() {
             <button
               type="button"
               className="combo-arrow"
-              style={{
-                position: "absolute",
-                right: 10,
-                top: 35,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                zIndex: 3
-              }}
               tabIndex={-1}
               onMouseDown={e => {
                 e.preventDefault();
@@ -507,17 +401,7 @@ export default function StoneDailyReport() {
               }}
             >▼</button>
             {showSizes && filteredSizes.length > 0 && (
-              <div className="daily-list-small" style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                zIndex: 2,
-                background: "#fff",
-                border: "1px solid #e5e7eb",
-                borderRadius: 6,
-                maxHeight: 180,
-                overflowY: "auto"
-              }}>
+              <div className="daily-list-small">
                 {filteredSizes.map((s, i) => (
                   <div
                     key={i}
@@ -525,10 +409,6 @@ export default function StoneDailyReport() {
                       setSizeInput(s);
                       setShowSizes(false);
                       setVidInput("");
-                    }}
-                    style={{
-                      padding: "8px 12px",
-                      cursor: "pointer"
                     }}
                   >
                     {s}
@@ -558,16 +438,6 @@ export default function StoneDailyReport() {
               <button
                 type="button"
                 className="clear-btn"
-                style={{
-                  position: "absolute",
-                  right: 36,
-                  top: 32,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  zIndex: 4
-                }}
                 onClick={() => setVidInput("")}
                 tabIndex={-1}
                 aria-label="Очистить поле"
@@ -576,15 +446,6 @@ export default function StoneDailyReport() {
             <button
               type="button"
               className="combo-arrow"
-              style={{
-                position: "absolute",
-                right: 10,
-                top: 35,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                zIndex: 3
-              }}
               tabIndex={-1}
               onMouseDown={e => {
                 e.preventDefault();
@@ -592,27 +453,13 @@ export default function StoneDailyReport() {
               }}
             >▼</button>
             {showVids && filteredVids.length > 0 && (
-              <div className="daily-list-small" style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                zIndex: 2,
-                background: "#fff",
-                border: "1px solid #e5e7eb",
-                borderRadius: 6,
-                maxHeight: 180,
-                overflowY: "auto"
-              }}>
+              <div className="daily-list-small">
                 {filteredVids.map((v, i) => (
                   <div
                     key={i}
                     onMouseDown={() => {
                       setVidInput(v);
                       setShowVids(false);
-                    }}
-                    style={{
-                      padding: "8px 12px",
-                      cursor: "pointer"
                     }}
                   >
                     {v}
@@ -635,16 +482,6 @@ export default function StoneDailyReport() {
               <button
                 type="button"
                 className="clear-btn"
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: 32,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  zIndex: 4
-                }}
                 onClick={() => setKolvo("")}
                 tabIndex={-1}
                 aria-label="Очистить поле"
@@ -660,7 +497,7 @@ export default function StoneDailyReport() {
               Сохранить
             </button>
             <button
-              className="daily-btn-alt"
+              className="daily-btn-alt daily-btn-small"
               style={{ marginLeft: 8 }}
               onClick={handleFinish}
               disabled={positions.length === 0}
