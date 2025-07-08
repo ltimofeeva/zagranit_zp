@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
+// SVG-иконки (карандаш, мусорка, крестик)
 const PencilIcon = () => (
   <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
 );
 
 const TrashIcon = () => (
   <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+);
+
+const CrossIcon = () => (
+  <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 );
 
 const getToday = () => {
@@ -142,29 +147,34 @@ export default function StoneDailyReport() {
         <div className="daily-sub">Введённые позиции:</div>
         <ul className="daily-list" style={{ marginTop: 14 }}>
           {positions.map((pos, i) => (
-            <li key={i} style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
-              <span style={{ marginRight: 8 }}>
+            <li key={i} style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: 4,
+              justifyContent: "space-between"
+            }}>
+              <span>
                 {pos.size} {pos.vid} — {pos.qty} шт.
               </span>
-              <button
-                className="icon-btn"
-                style={{ marginLeft: 8 }}
-                title="Редактировать"
-                onClick={() => {
-                  setIsDone(false);
-                  handleEditPosition(i);
-                }}
-              >
-                <PencilIcon />
-              </button>
-              <button
-                className="icon-btn"
-                style={{ marginLeft: 4 }}
-                title="Удалить"
-                onClick={() => handleDeletePosition(i)}
-              >
-                <TrashIcon />
-              </button>
+              <span style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                <button
+                  className="icon-btn"
+                  title="Редактировать"
+                  onClick={() => {
+                    setIsDone(false);
+                    handleEditPosition(i);
+                  }}
+                >
+                  <PencilIcon />
+                </button>
+                <button
+                  className="icon-btn"
+                  title="Удалить"
+                  onClick={() => handleDeletePosition(i)}
+                >
+                  <TrashIcon />
+                </button>
+              </span>
             </li>
           ))}
         </ul>
@@ -196,30 +206,36 @@ export default function StoneDailyReport() {
       <ul className="daily-list" style={{ marginTop: 14 }}>
         {positions.map((pos, i) => (
           <React.Fragment key={i}>
-            <li style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
-              <span style={{ marginRight: 8 }}>
+            <li style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: 4,
+              justifyContent: "space-between"
+            }}>
+              <span>
                 {pos.size} {pos.vid} — {pos.qty} шт.
               </span>
-              <button
-                className="icon-btn"
-                style={{ marginLeft: 8 }}
-                title="Редактировать"
-                onClick={() => handleEditPosition(i)}
-              >
-                <PencilIcon />
-              </button>
-              <button
-                className="icon-btn"
-                style={{ marginLeft: 4 }}
-                title="Удалить"
-                onClick={() => handleDeletePosition(i)}
-              >
-                <TrashIcon />
-              </button>
+              <span style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                <button
+                  className="icon-btn"
+                  title="Редактировать"
+                  onClick={() => handleEditPosition(i)}
+                >
+                  <PencilIcon />
+                </button>
+                <button
+                  className="icon-btn"
+                  title="Удалить"
+                  onClick={() => handleDeletePosition(i)}
+                >
+                  <TrashIcon />
+                </button>
+              </span>
             </li>
             {editIndex === i && (
               <li>
                 <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
+                  {/* Размер */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Размер</label>
                     <input
@@ -236,6 +252,26 @@ export default function StoneDailyReport() {
                       onBlur={() => setTimeout(() => setShowSizes(false), 100)}
                       autoComplete="off"
                     />
+                    {/* Крестик */}
+                    {sizeInput && (
+                      <button
+                        type="button"
+                        className="clear-btn"
+                        style={{
+                          position: "absolute",
+                          right: 36,
+                          top: 32,
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: 0,
+                          zIndex: 4
+                        }}
+                        onClick={() => setSizeInput("")}
+                        tabIndex={-1}
+                        aria-label="Очистить поле"
+                      ><CrossIcon /></button>
+                    )}
                     <button
                       type="button"
                       className="combo-arrow"
@@ -285,6 +321,7 @@ export default function StoneDailyReport() {
                       </div>
                     )}
                   </div>
+                  {/* Вид работы */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Вид работы</label>
                     <input
@@ -301,6 +338,25 @@ export default function StoneDailyReport() {
                       autoComplete="off"
                       disabled={!sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length)}
                     />
+                    {vidInput && (
+                      <button
+                        type="button"
+                        className="clear-btn"
+                        style={{
+                          position: "absolute",
+                          right: 36,
+                          top: 32,
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: 0,
+                          zIndex: 4
+                        }}
+                        onClick={() => setVidInput("")}
+                        tabIndex={-1}
+                        aria-label="Очистить поле"
+                      ><CrossIcon /></button>
+                    )}
                     <button
                       type="button"
                       className="combo-arrow"
@@ -349,7 +405,8 @@ export default function StoneDailyReport() {
                       </div>
                     )}
                   </div>
-                  <div className="daily-field">
+                  {/* Количество */}
+                  <div className="daily-field" style={{ position: "relative" }}>
                     <label>Количество</label>
                     <input
                       type="number"
@@ -358,6 +415,25 @@ export default function StoneDailyReport() {
                       value={kolvo}
                       onChange={(e) => setKolvo(e.target.value)}
                     />
+                    {kolvo && (
+                      <button
+                        type="button"
+                        className="clear-btn"
+                        style={{
+                          position: "absolute",
+                          right: 10,
+                          top: 32,
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: 0,
+                          zIndex: 4
+                        }}
+                        onClick={() => setKolvo("")}
+                        tabIndex={-1}
+                        aria-label="Очистить поле"
+                      ><CrossIcon /></button>
+                    )}
                   </div>
                   <div className="daily-flex">
                     <button
@@ -377,6 +453,7 @@ export default function StoneDailyReport() {
       {/* Форма добавления новой позиции (только если не редактируем) */}
       {editIndex === null && (
         <div style={{ marginTop: 18 }}>
+          {/* Размер */}
           <div className="daily-field" style={{ position: "relative" }}>
             <label>Размер</label>
             <input
@@ -393,6 +470,25 @@ export default function StoneDailyReport() {
               onBlur={() => setTimeout(() => setShowSizes(false), 100)}
               autoComplete="off"
             />
+            {sizeInput && (
+              <button
+                type="button"
+                className="clear-btn"
+                style={{
+                  position: "absolute",
+                  right: 36,
+                  top: 32,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  zIndex: 4
+                }}
+                onClick={() => setSizeInput("")}
+                tabIndex={-1}
+                aria-label="Очистить поле"
+              ><CrossIcon /></button>
+            )}
             <button
               type="button"
               className="combo-arrow"
@@ -442,6 +538,7 @@ export default function StoneDailyReport() {
               </div>
             )}
           </div>
+          {/* Вид работы */}
           <div className="daily-field" style={{ position: "relative" }}>
             <label>Вид работы</label>
             <input
@@ -458,6 +555,25 @@ export default function StoneDailyReport() {
               autoComplete="off"
               disabled={!sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length)}
             />
+            {vidInput && (
+              <button
+                type="button"
+                className="clear-btn"
+                style={{
+                  position: "absolute",
+                  right: 36,
+                  top: 32,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  zIndex: 4
+                }}
+                onClick={() => setVidInput("")}
+                tabIndex={-1}
+                aria-label="Очистить поле"
+              ><CrossIcon /></button>
+            )}
             <button
               type="button"
               className="combo-arrow"
@@ -506,7 +622,8 @@ export default function StoneDailyReport() {
               </div>
             )}
           </div>
-          <div className="daily-field">
+          {/* Количество */}
+          <div className="daily-field" style={{ position: "relative" }}>
             <label>Количество</label>
             <input
               type="number"
@@ -515,6 +632,25 @@ export default function StoneDailyReport() {
               value={kolvo}
               onChange={(e) => setKolvo(e.target.value)}
             />
+            {kolvo && (
+              <button
+                type="button"
+                className="clear-btn"
+                style={{
+                  position: "absolute",
+                  right: 10,
+                  top: 32,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  zIndex: 4
+                }}
+                onClick={() => setKolvo("")}
+                tabIndex={-1}
+                aria-label="Очистить поле"
+              ><CrossIcon /></button>
+            )}
           </div>
           <div className="daily-flex">
             <button
