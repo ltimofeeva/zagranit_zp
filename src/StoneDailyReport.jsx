@@ -114,7 +114,7 @@ export default function StoneDailyReport() {
   };
 
   const handleSubmit = async () => {
-    await fetch('https://n8n.paderina-tech.ru/webhook-test/53b5e8c7-61a2-4164-a235-c79d25b95a11', {
+    await fetch('https://lpaderina.store/webhook-test/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ positions }),
@@ -198,7 +198,7 @@ export default function StoneDailyReport() {
   return (
     <div className="daily-form-main">
       <div className="daily-title">Дата — {getToday()}</div>
-      <div className="daily-sub">Введите позиции!</div>
+      <div className="daily-sub">Введите позиции</div>
       <ul className="daily-list" style={{ marginTop: 14 }}>
         {positions.map((pos, i) => (
           <React.Fragment key={i}>
