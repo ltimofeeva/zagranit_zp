@@ -179,8 +179,8 @@ body {
 /* Кнопка-крестик справа в инпуте */
 .clear-btn {
   position: absolute;
-  right: 30px;
-  top: 32px;
+  right: 26px;
+  top: 34px;
   opacity: 0.7;
   transition: opacity 0.15s;
   padding: 0 4px;
