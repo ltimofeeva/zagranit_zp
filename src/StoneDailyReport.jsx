@@ -221,13 +221,13 @@ export default function StoneDailyReport() {
       <div className="daily-title">Дата — {getToday()}</div>
       {/* Селект листа под датой */}
       <div className="daily-field">
-        <label>Лист документа</label>
+        <label>Фамилия</label>
         <select
           className="daily-input"
           value={selectedSheet}
           onChange={e => setSelectedSheet(e.target.value)}
         >
-          <option value="">Выберите лист...</option>
+          <option value="">Выберите фамилию...</option>
           {sheetOptions.map(opt => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
