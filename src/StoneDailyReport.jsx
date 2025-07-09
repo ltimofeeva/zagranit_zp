@@ -363,7 +363,7 @@ export default function StoneDailyReport() {
         ))}
       </ul>
       {/* Форма добавления новой позиции (только если не редактируем) */}
-      {editIndex === null && (
+      {editIndex === null && !isDone && (
         <div style={{ marginTop: 18 }}>
           {/* Размер */}
           <div className="daily-field" style={{ position: "relative" }}>
