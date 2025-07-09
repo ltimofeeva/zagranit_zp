@@ -32,17 +32,31 @@ export default function StoneDailyReport() {
   const [isDone, setIsDone] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [wasDoneBeforeEdit, setWasDoneBeforeEdit] = useState(false);
+  const [sheetOptions, setSheetOptions] = useState([]);
+  const [selectedSheet, setSelectedSheet] = useState(""); // выбранный лист
 
 
-  useEffect(() => {
-    async function fetchNomenclature() {
-      const res = await fetch('https://lpaderina.store/webhook/nomenklatura');
-      const data = await res.json();
-      setBySize(data.bySize || {});
-      setSizes(Object.keys(data.bySize || {}));
+
+useEffect(() => {
+  async function fetchInitialData() {
+    // 1. Получаем номенклатуру
+    const resNomenclature = await fetch('https://lpaderina.store/webhook/nomenklatura');
+    const dataNomenclature = await resNomenclature.json();
+    setBySize(dataNomenclature.bySize || {});
+    setSizes(Object.keys(dataNomenclature.bySize || {}));
+
+    // 2. Получаем список листов (примерный URL — подставь свой)
+    const resSheets = await fetch('https://lpaderina.store/webhook/get-sheets');
+    const dataSheets = await resSheets.json();
+    // Предположим, что dataSheets выглядит так же, как твой пример выше
+    if (dataSheets.length && dataSheets[0].list_name) {
+      setSheetOptions(JSON.parse(dataSheets[0].list_name));
     }
-    fetchNomenclature();
-  }, []);
+  }
+  fetchInitialData();
+}, []);
+
+  
 
   const filteredSizes = sizes.filter((s) =>
     s.toLowerCase().includes(sizeInput.toLowerCase())
@@ -140,6 +154,25 @@ export default function StoneDailyReport() {
       </div>
     );
   }
+
+  <div className="daily-title">Дата — {getToday()}</div>
+
+<div className="daily-field">
+  <label>Лист документа</label>
+  <select
+    className="daily-input"
+    value={selectedSheet}
+    onChange={e => setSelectedSheet(e.target.value)}
+  >
+    <option value="">Выберите лист...</option>
+    {sheetOptions.map(opt => (
+      <option key={opt.value} value={opt.value}>
+        {opt.label}
+      </option>
+    ))}
+  </select>
+</div>
+
 
   // Если завершено редактирование, показываем только строки и две кнопки
   if (isDone) {
