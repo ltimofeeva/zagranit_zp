@@ -245,16 +245,6 @@ export default function StoneDailyReport() {
                     <button
                         type="button"
                         className="clear-btn"
-                        style={{
-                          position: "absolute",
-                          right: 36, // Крестик левее стрелки
-                          top: 32,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                          zIndex: 4
-                        }}
                         onClick={() => setSizeInput("")}
                         tabIndex={-1}
                         aria-label="Очистить поле"
@@ -263,15 +253,6 @@ export default function StoneDailyReport() {
                     <button
                       type="button"
                       className="combo-arrow"
-                      style={{
-                        position: "absolute",
-                        right: 10, // Стрелка всегда справа
-                        top: 35,
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        zIndex: 3
-                      }}
                       tabIndex={-1}
                       onMouseDown={e => {
                         e.preventDefault();
