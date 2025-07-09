@@ -70,7 +70,7 @@ export default function StoneDailyReport() {
     setSizeInput("");
     setVidInput("");
     setKolvo("");
-    // НЕ трогаем isDone!
+    setIsDone(true); // <-- вот это ключ!
   } else {
     setPositions([...positions, item]);
     setSizeInput("");
@@ -78,6 +78,7 @@ export default function StoneDailyReport() {
     setKolvo("");
   }
 };
+
 
   const handleEditPosition = (index) => {
     const pos = positions[index];
