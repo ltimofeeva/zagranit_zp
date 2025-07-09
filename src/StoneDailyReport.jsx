@@ -241,6 +241,7 @@ export default function StoneDailyReport() {
                       onBlur={() => setTimeout(() => setShowSizes(false), 100)}
                       autoComplete="off"
                     />
+                    {sizeInput && (
                     <button
                         type="button"
                         className="clear-btn"
