@@ -42,7 +42,7 @@ export default function StoneDailyReport() {
       setSizes(Object.keys(dataNomenclature.bySize || {}));
 
       // 2. Получаем список листов
-      const resSheets = await fetch('https://lpaderina.store/webhook/get-sheets');
+      const resSheets = await fetch('https://lpaderina.store/webhook/rabotniki');
       const dataSheets = await resSheets.json();
       if (dataSheets.length && dataSheets[0].list_name) {
         setSheetOptions(JSON.parse(dataSheets[0].list_name));
@@ -153,13 +153,13 @@ export default function StoneDailyReport() {
         <div className="daily-title">Дата — {getToday()}</div>
         {/* Селект листа */}
         <div className="daily-field">
-          <label>Лист документа</label>
+          <label>Фамилия</label>
           <select
             className="daily-input"
             value={selectedSheet}
             onChange={e => setSelectedSheet(e.target.value)}
           >
-            <option value="">Выберите лист...</option>
+            <option value="">Выберите фамилию...</option>
             {sheetOptions.map(opt => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
