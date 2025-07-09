@@ -51,29 +51,33 @@ export default function StoneDailyReport() {
   );
 
   const handleSave = () => {
-    if (
-      !sizeInput ||
-      !vidInput ||
-      !kolvo ||
-      !sizes.includes(sizeInput) ||
-      !(bySize[sizeInput] || []).includes(vidInput)
-    ) {
-      alert("Выберите корректный размер и вид работы из списка!");
-      return;
-    }
-    const item = { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo };
-    if (editIndex !== null) {
-      const updated = [...positions];
-      updated[editIndex] = item;
-      setPositions(updated);
-      setEditIndex(null);
-    } else {
-      setPositions([...positions, item]);
-    }
+  if (
+    !sizeInput ||
+    !vidInput ||
+    !kolvo ||
+    !sizes.includes(sizeInput) ||
+    !(bySize[sizeInput] || []).includes(vidInput)
+  ) {
+    alert("Выберите корректный размер и вид работы из списка!");
+    return;
+  }
+  const item = { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo };
+  if (editIndex !== null) {
+    const updated = [...positions];
+    updated[editIndex] = item;
+    setPositions(updated);
+    setEditIndex(null);
     setSizeInput("");
     setVidInput("");
     setKolvo("");
-  };
+    // НЕ трогаем isDone!
+  } else {
+    setPositions([...positions, item]);
+    setSizeInput("");
+    setVidInput("");
+    setKolvo("");
+  }
+};
 
   const handleEditPosition = (index) => {
     const pos = positions[index];
