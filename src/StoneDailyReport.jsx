@@ -5,11 +5,9 @@ import "./styles.css";
 const PencilIcon = () => (
   <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
 );
-
 const TrashIcon = () => (
   <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
 );
-
 const CrossIcon = () => (
   <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 );
@@ -35,28 +33,23 @@ export default function StoneDailyReport() {
   const [sheetOptions, setSheetOptions] = useState([]);
   const [selectedSheet, setSelectedSheet] = useState(""); // выбранный лист
 
+  useEffect(() => {
+    async function fetchInitialData() {
+      // 1. Получаем номенклатуру
+      const resNomenclature = await fetch('https://lpaderina.store/webhook/nomenklatura');
+      const dataNomenclature = await resNomenclature.json();
+      setBySize(dataNomenclature.bySize || {});
+      setSizes(Object.keys(dataNomenclature.bySize || {}));
 
-
-useEffect(() => {
-  async function fetchInitialData() {
-    // 1. Получаем номенклатуру
-    const resNomenclature = await fetch('https://lpaderina.store/webhook/nomenklatura');
-    const dataNomenclature = await resNomenclature.json();
-    setBySize(dataNomenclature.bySize || {});
-    setSizes(Object.keys(dataNomenclature.bySize || {}));
-
-    // 2. Получаем список листов (примерный URL — подставь свой)
-    const resSheets = await fetch('https://lpaderina.store/webhook/get-sheets');
-    const dataSheets = await resSheets.json();
-    // Предположим, что dataSheets выглядит так же, как твой пример выше
-    if (dataSheets.length && dataSheets[0].list_name) {
-      setSheetOptions(JSON.parse(dataSheets[0].list_name));
+      // 2. Получаем список листов
+      const resSheets = await fetch('https://lpaderina.store/webhook/get-sheets');
+      const dataSheets = await resSheets.json();
+      if (dataSheets.length && dataSheets[0].list_name) {
+        setSheetOptions(JSON.parse(dataSheets[0].list_name));
+      }
     }
-  }
-  fetchInitialData();
-}, []);
-
-  
+    fetchInitialData();
+  }, []);
 
   const filteredSizes = sizes.filter((s) =>
     s.toLowerCase().includes(sizeInput.toLowerCase())
@@ -67,28 +60,26 @@ useEffect(() => {
   );
 
   const handleSave = () => {
-  // ...валидация...
-  const item = { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo };
-  if (editIndex !== null) {
-    const updated = [...positions];
-    updated[editIndex] = item;
-    setPositions(updated);
-    setEditIndex(null);
-    setSizeInput("");
-    setVidInput("");
-    setKolvo("");
-    if (wasDoneBeforeEdit) {
-      setIsDone(true); // вернёмся в режим просмотра
-      setWasDoneBeforeEdit(false); // сбросим флаг
+    const item = { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo };
+    if (editIndex !== null) {
+      const updated = [...positions];
+      updated[editIndex] = item;
+      setPositions(updated);
+      setEditIndex(null);
+      setSizeInput("");
+      setVidInput("");
+      setKolvo("");
+      if (wasDoneBeforeEdit) {
+        setIsDone(true);
+        setWasDoneBeforeEdit(false);
+      }
+    } else {
+      setPositions([...positions, item]);
+      setSizeInput("");
+      setVidInput("");
+      setKolvo("");
     }
-  } else {
-    setPositions([...positions, item]);
-    setSizeInput("");
-    setVidInput("");
-    setKolvo("");
-  }
-};
-
+  };
 
   const handleEditPosition = (index) => {
     const pos = positions[index];
@@ -97,7 +88,7 @@ useEffect(() => {
     setKolvo(pos.qty);
     setEditIndex(index);
     setIsDone(false);
-    setWasDoneBeforeEdit(isDone); 
+    setWasDoneBeforeEdit(isDone);
     setShowSizes(false);
     setShowVids(false);
   };
@@ -131,7 +122,7 @@ useEffect(() => {
     await fetch('https://lpaderina.store/webhook-test/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ positions }),
+      body: JSON.stringify({ positions, sheet: selectedSheet }),
     });
     setShowSuccess(true);
     setPositions([]);
@@ -155,30 +146,27 @@ useEffect(() => {
     );
   }
 
-  <div className="daily-title">Дата — {getToday()}</div>
-
-<div className="daily-field">
-  <label>Лист документа</label>
-  <select
-    className="daily-input"
-    value={selectedSheet}
-    onChange={e => setSelectedSheet(e.target.value)}
-  >
-    <option value="">Выберите лист...</option>
-    {sheetOptions.map(opt => (
-      <option key={opt.value} value={opt.value}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
-</div>
-
-
   // Если завершено редактирование, показываем только строки и две кнопки
   if (isDone) {
     return (
       <div className="daily-form-main">
         <div className="daily-title">Дата — {getToday()}</div>
+        {/* Селект листа */}
+        <div className="daily-field">
+          <label>Лист документа</label>
+          <select
+            className="daily-input"
+            value={selectedSheet}
+            onChange={e => setSelectedSheet(e.target.value)}
+          >
+            <option value="">Выберите лист...</option>
+            {sheetOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="daily-sub">Введённые позиции:</div>
         <ul className="daily-list" style={{ marginTop: 14 }}>
           {positions.map((pos, i) => (
@@ -218,7 +206,7 @@ useEffect(() => {
           <button
             className="daily-btn-alt daily-btn-small"
             onClick={handleSubmit}
-            disabled={positions.length === 0}
+            disabled={positions.length === 0 || !selectedSheet}
           >
             Отправить данные
           </button>
@@ -231,6 +219,22 @@ useEffect(() => {
   return (
     <div className="daily-form-main">
       <div className="daily-title">Дата — {getToday()}</div>
+      {/* Селект листа под датой */}
+      <div className="daily-field">
+        <label>Лист документа</label>
+        <select
+          className="daily-input"
+          value={selectedSheet}
+          onChange={e => setSelectedSheet(e.target.value)}
+        >
+          <option value="">Выберите лист...</option>
+          {sheetOptions.map(opt => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="daily-sub">Введите позиции</div>
       <ul className="daily-list" style={{ marginTop: 14 }}>
         {positions.map((pos, i) => (
@@ -277,7 +281,7 @@ useEffect(() => {
                       autoComplete="off"
                     />
                     {sizeInput && (
-                    <button
+                      <button
                         type="button"
                         className="clear-btn"
                         onClick={() => setSizeInput("")}
