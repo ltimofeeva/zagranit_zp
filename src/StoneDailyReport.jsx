@@ -41,11 +41,16 @@ export default function StoneDailyReport() {
       setBySize(dataNomenclature.bySize || {});
       setSizes(Object.keys(dataNomenclature.bySize || {}));
 
-      // 2. Получаем список листов
+      // 2. Получаем список листов работников
       const resSheets = await fetch('https://lpaderina.store/webhook/rabotniki');
       const dataSheets = await resSheets.json();
-      if (dataSheets.length && dataSheets[0].list_name) {
-        setSheetOptions(JSON.parse(dataSheets[0].list_name));
+      if (Array.isArray(dataSheets) && dataSheets[0] && dataSheets[0].list_name) {
+        try {
+          const options = JSON.parse(dataSheets[0].list_name);
+          setSheetOptions(options);
+        } catch (e) {
+          setSheetOptions([]);
+        }
       }
     }
     fetchInitialData();
