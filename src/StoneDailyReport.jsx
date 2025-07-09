@@ -62,6 +62,7 @@ export default function StoneDailyReport() {
     return;
   }
   const item = { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo };
+
   if (editIndex !== null) {
     const updated = [...positions];
     updated[editIndex] = item;
@@ -70,7 +71,11 @@ export default function StoneDailyReport() {
     setSizeInput("");
     setVidInput("");
     setKolvo("");
-    setIsDone(true); // <-- вот это ключ!
+    // Вот тут добавляем: если был isDone (режим завершено), вернёмся в него
+    if (isDone) {
+      setIsDone(true); // остаёмся в режиме просмотра (кнопки: вернуться/отправить)
+    }
+    // если не был в режиме завершено — isDone останется false, форма добавления снова появится
   } else {
     setPositions([...positions, item]);
     setSizeInput("");
