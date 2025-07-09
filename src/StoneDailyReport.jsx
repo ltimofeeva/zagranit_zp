@@ -44,12 +44,12 @@ export default function StoneDailyReport() {
       // 2. Получаем список листов работников
       const resSheets = await fetch('https://lpaderina.store/webhook/rabotniki');
       const dataSheets = await resSheets.json();
-      if (dataSheets.length && dataSheets[0].list_name) {
-      console.log("RAW list_name:", dataSheets[0].list_name);
-      const parsed = JSON.parse(dataSheets[0].list_name);
+     if (dataSheets.list_name) {
+      console.log("RAW list_name:", dataSheets.list_name);
+      const parsed = JSON.parse(dataSheets.list_name);
       console.log("Parsed list_name:", parsed);
       setSheetOptions(parsed);
-    }
+     }
       if (Array.isArray(dataSheets) && dataSheets[0] && dataSheets[0].list_name) {
         try {
           const options = JSON.parse(dataSheets[0].list_name);
