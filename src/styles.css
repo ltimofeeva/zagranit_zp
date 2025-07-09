@@ -32,6 +32,13 @@ body {
   padding: 0;
   list-style: none;
 }
+
+.daily-edit-form {
+  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .daily-list li {
   background: #f1f5f9;
   border-radius: 14px;
@@ -104,6 +111,7 @@ body {
 .daily-field {
   margin-bottom: 13px;
   position: relative;
+  width: 100%;
 }
 .daily-field label {
   display: block;
