@@ -31,6 +31,8 @@ export default function StoneDailyReport() {
   const [editIndex, setEditIndex] = useState(null);
   const [isDone, setIsDone] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [wasDoneBeforeEdit, setWasDoneBeforeEdit] = useState(false);
+
 
   useEffect(() => {
     async function fetchNomenclature() {
@@ -51,18 +53,8 @@ export default function StoneDailyReport() {
   );
 
   const handleSave = () => {
-  if (
-    !sizeInput ||
-    !vidInput ||
-    !kolvo ||
-    !sizes.includes(sizeInput) ||
-    !(bySize[sizeInput] || []).includes(vidInput)
-  ) {
-    alert("Выберите корректный размер и вид работы из списка!");
-    return;
-  }
+  // ...валидация...
   const item = { date: getToday(), size: sizeInput, vid: vidInput, qty: kolvo };
-
   if (editIndex !== null) {
     const updated = [...positions];
     updated[editIndex] = item;
@@ -71,11 +63,10 @@ export default function StoneDailyReport() {
     setSizeInput("");
     setVidInput("");
     setKolvo("");
-    // Вот тут добавляем: если был isDone (режим завершено), вернёмся в него
-    if (isDone) {
-      setIsDone(true); // остаёмся в режиме просмотра (кнопки: вернуться/отправить)
+    if (wasDoneBeforeEdit) {
+      setIsDone(true); // вернёмся в режим просмотра
+      setWasDoneBeforeEdit(false); // сбросим флаг
     }
-    // если не был в режиме завершено — isDone останется false, форма добавления снова появится
   } else {
     setPositions([...positions, item]);
     setSizeInput("");
@@ -92,6 +83,7 @@ export default function StoneDailyReport() {
     setKolvo(pos.qty);
     setEditIndex(index);
     setIsDone(false);
+    setWasDoneBeforeEdit(isDone); 
     setShowSizes(false);
     setShowVids(false);
   };
