@@ -130,7 +130,7 @@ export default function StoneDailyReport() {
   };
 
   const handleSubmit = async () => {
-    await fetch('https://lpaderina.store/webhook-test/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
+    await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ positions, sheet: selectedSheet }),
