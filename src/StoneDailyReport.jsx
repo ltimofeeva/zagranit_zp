@@ -72,7 +72,7 @@ export default function StoneDailyReport() {
 
     // Запрос на n8n webhook для подгрузки задания
     if (value) {
-      const res = await fetch('https://lpaderina.store/webhook-test/daily_task', {
+      const res = await fetch('https://lpaderina.store/webhook/daily_task', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ sheet: 'Карпов' }),
