@@ -23,8 +23,7 @@ export default function StoneDailyReport() {
   const [kolvo, setKolvo] = useState("");
   const [sizeInput, setSizeInput] = useState("");
   const [vidInput, setVidInput] = useState("");
-  const [isAdding, setIsAdding] = useState(false); // режим добавления позиции
-  const [isDone, setIsDone] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [sheetOptions, setSheetOptions] = useState([]);
   const [selectedSheet, setSelectedSheet] = useState("");
@@ -33,7 +32,7 @@ export default function StoneDailyReport() {
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
 
-  // Получение списка сотрудников и номенклатуры
+  // Получаем список сотрудников и номенклатуру для добавления новых позиций
   useEffect(() => {
     async function fetchInitialData() {
       // Номенклатура
@@ -61,18 +60,20 @@ export default function StoneDailyReport() {
     fetchInitialData();
   }, []);
 
-  // Загрузка задания на сегодня по выбранной фамилии
-  useEffect(() => {
-    if (!selectedSheet) {
-      setPositions([]);
-      return;
-    }
-    async function loadAssignment() {
-      const today = new Date();
-      const dateString = today.toLocaleDateString("ru-RU");
-      // Здесь укажи правильный URL твоего backend!
+  // Запрашиваем задание у n8n по выбранной фамилии
+  const handleSelectSheet = async (e) => {
+    const value = e.target.value;
+    setSelectedSheet(value);
+
+    // сбрасываем старые позиции и режимы
+    setPositions([]);
+    setEditIndex(null);
+    setIsAdding(false);
+
+    // Запрос на n8n webhook для подгрузки задания
+    if (value) {
       const res = await fetch(
-        `https://lpaderina.store/webhook-test/daily_task`
+        `https://lpaderina.store/webhook-test/daily_task?sheet=${encodeURIComponent(value)}`
       );
       if (res.ok) {
         const data = await res.json();
@@ -81,10 +82,9 @@ export default function StoneDailyReport() {
         setPositions([]);
       }
     }
-    loadAssignment();
-  }, [selectedSheet]);
+  };
 
-  // Сохранить отредактированную позицию
+  // Сохранить новую или отредактированную позицию
   const handleSave = () => {
     if (editIndex !== null && kolvo) {
       const updated = [...positions];
@@ -134,18 +134,6 @@ export default function StoneDailyReport() {
     setKolvo("");
   };
 
-  const handleFinish = () => {
-    setIsDone(true);
-    setEditIndex(null);
-    setKolvo("");
-    setIsAdding(false);
-  };
-
-  const handleReturnToEdit = () => {
-    setIsDone(false);
-    setShowSuccess(false);
-  };
-
   const handleSubmit = async () => {
     await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
       method: 'POST',
@@ -154,7 +142,6 @@ export default function StoneDailyReport() {
     });
     setShowSuccess(true);
     setPositions([]);
-    setIsDone(false);
     setEditIndex(null);
     setKolvo("");
     setIsAdding(false);
@@ -192,7 +179,7 @@ export default function StoneDailyReport() {
           <select
             className="daily-input"
             value={selectedSheet}
-            onChange={e => setSelectedSheet(e.target.value)}
+            onChange={handleSelectSheet}
           >
             <option value="">Выберите фамилию...</option>
             {sheetOptions.map(opt => (
@@ -215,7 +202,7 @@ export default function StoneDailyReport() {
         <select
           className="daily-input"
           value={selectedSheet}
-          onChange={e => setSelectedSheet(e.target.value)}
+          onChange={handleSelectSheet}
         >
           <option value="">Выберите фамилию...</option>
           {sheetOptions.map(opt => (
