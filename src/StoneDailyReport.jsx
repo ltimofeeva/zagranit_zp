@@ -59,6 +59,7 @@ export default function StoneDailyReport() {
 
   // Первый useEffect — получаем chatId и загружаем справочники
   useEffect(() => {
+    console.log("window.location.search:", window.location.search);
     const params = new URLSearchParams(window.location.search);
     const cid = params.get("chat_id");
     if (cid) setChatId(cid);
