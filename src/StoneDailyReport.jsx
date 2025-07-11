@@ -137,19 +137,25 @@ export default function StoneDailyReport() {
     setKolvo("");
   };
 
-  const handleSubmit = async () => {
-    await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ positions, sheet: selectedSheet }),
-    });
-    setShowSuccess(true);
-    setPositions([]);
-    setEditIndex(null);
-    setKolvo("");
-    setIsAdding(false);
-    setTimeout(() => setShowSuccess(false), 4000);
-  };
+const handleSubmit = async () => {
+  // qty гарантированно число
+  const positionsToSend = positions.map(pos => ({
+    ...pos,
+    qty: Number(pos.qty)
+  }));
+
+  await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ positions: positionsToSend, sheet: selectedSheet }),
+  });
+  setShowSuccess(true);
+  setPositions([]);
+  setEditIndex(null);
+  setKolvo("");
+  setIsAdding(false);
+  setTimeout(() => setShowSuccess(false), 4000);
+};
 
   // Фильтрация для выпадающих списков
   const filteredSizes = sizes.filter((s) =>
