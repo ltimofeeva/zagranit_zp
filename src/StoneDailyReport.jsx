@@ -62,6 +62,7 @@ export default function StoneDailyReport() {
     console.log("window.location.search:", window.location.search);
     const params = new URLSearchParams(window.location.search);
     const cid = params.get("chat_id");
+    console.log("cid:", cid);
     if (cid) setChatId(cid);
 
     async function fetchInitialData() {
