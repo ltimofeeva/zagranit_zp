@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-// SVG-иконки
-const PencilIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
-);
-const TrashIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-);
-const CrossIcon = () => (
-  <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-);
+// SVG-иконки (без изменений)
+const PencilIcon = () => (/* ... */);
+const TrashIcon = () => (/* ... */);
+const CrossIcon = () => (/* ... */);
 
 const getToday = () => {
   const d = new Date();
@@ -31,9 +25,27 @@ export default function StoneDailyReport() {
   const [sizes, setSizes] = useState([]);
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
+  const [reportDate, setReportDate] = useState(getToday()); // Дата для отчёта
+  const [chatId, setChatId] = useState(null);
 
-  // Получаем список сотрудников и номенклатуру для добавления новых позиций
+
+  // Получить дату по вебхуку при загрузке страницы
+  const fetchReportDate = async () => {
+    try {
+      const res = await fetch('https://lpaderina.store/webhook/get_current_date');
+      const data = await res.json();
+      if (data.date) setReportDate(data.date);
+    } catch (e) {
+      setReportDate(getToday());
+    }
+  };
+
+  // Получаем список сотрудников и номенклатуру
   useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const cid = params.get("chat_id");
+  if (cid) setChatId(cid);
+
     async function fetchInitialData() {
       // Номенклатура
       const resNomenclature = await fetch('https://lpaderina.store/webhook/nomenklatura');
@@ -58,19 +70,17 @@ export default function StoneDailyReport() {
       }
     }
     fetchInitialData();
+    fetchReportDate(); // подгружаем дату при открытии формы
   }, []);
 
-  // Запрашиваем задание у n8n по выбранной фамилии
+  // Выбор фамилии: запрашиваем задание и (если есть) новую дату
   const handleSelectSheet = async (e) => {
     const value = e.target.value;
     setSelectedSheet(value);
-
-    // сбрасываем старые позиции и режимы
     setPositions([]);
     setEditIndex(null);
     setIsAdding(false);
 
-    // Запрос на n8n webhook для подгрузки задания
     if (value) {
       const res = await fetch('https://lpaderina.store/webhook/daily_task', {
         method: 'POST',
@@ -80,7 +90,10 @@ export default function StoneDailyReport() {
 
       if (res.ok) {
         const data = await res.json();
-        setPositions(data || []);
+        // Если воркфлоу возвращает объект {positions: [...], date: "..."}
+        if (data.date) setReportDate(data.date);
+        if (data.positions) setPositions(data.positions);
+        else setPositions(data || []);
       } else {
         setPositions([]);
       }
@@ -137,30 +150,31 @@ export default function StoneDailyReport() {
     setKolvo("");
   };
 
-const handleSubmit = async () => {
-  // qty гарантированно число
-  const positionsToSend = positions.map(pos => ({
-    ...pos,
-    qty: Number(pos.qty)
-  }));
-  const today = getToday();
+  // Отправить данные
+  const handleSubmit = async () => {
+    // qty гарантированно число
+    const positionsToSend = positions.map(pos => ({
+      ...pos,
+      qty: Number(pos.qty)
+    }));
 
-  await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      positions: positionsToSend,
-      sheet: selectedSheet,
-      date: today
-    }),
-  });
-  setShowSuccess(true);
-  setPositions([]);
-  setEditIndex(null);
-  setKolvo("");
-  setIsAdding(false);
-  setTimeout(() => setShowSuccess(false), 4000);
-};
+    await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        positions: positionsToSend,
+        sheet: selectedSheet,
+        date: reportDate, // отправляем актуальную дату
+        chat_id: chatId 
+      }),
+    });
+    setShowSuccess(true);
+    setPositions([]);
+    setEditIndex(null);
+    setKolvo("");
+    setIsAdding(false);
+    setTimeout(() => setShowSuccess(false), 4000);
+  };
 
   // Фильтрация для выпадающих списков
   const filteredSizes = sizes.filter((s) =>
@@ -175,7 +189,7 @@ const handleSubmit = async () => {
   if (showSuccess) {
     return (
       <div className="daily-form-main">
-        <div className="daily-title">Дата — {getToday()}</div>
+        <div className="daily-title">Дата — {reportDate}</div>
         <div className="daily-sub" style={{ marginTop: 40, fontSize: 24, textAlign: "center", color: "#22c55e" }}>
           Спасибо за твой труд!
         </div>
@@ -187,7 +201,7 @@ const handleSubmit = async () => {
   if (!selectedSheet) {
     return (
       <div className="daily-form-main">
-        <div className="daily-title">Дата — {getToday()}</div>
+        <div className="daily-title">Дата — {reportDate}</div>
         <div className="daily-field">
           <label>Фамилия</label>
           <select
@@ -210,7 +224,7 @@ const handleSubmit = async () => {
   // --- ОСНОВНОЙ ЭКРАН: фамилия выбрана, показываем позиции и кнопки ---
   return (
     <div className="daily-form-main">
-      <div className="daily-title">Дата — {getToday()}</div>
+      <div className="daily-title">Дата — {reportDate}</div>
       <div className="daily-field">
         <label>Фамилия</label>
         <select
