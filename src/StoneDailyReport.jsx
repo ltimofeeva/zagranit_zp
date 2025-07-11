@@ -37,30 +37,32 @@ export default function StoneDailyReport() {
   const [sizes, setSizes] = useState([]);
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
-  const [reportDate, setReportDate] = useState(getToday());
-  const [chatId, setChatId] = useState(null);
+ const [reportDate, setReportDate] = useState(getToday());
+const [chatId, setChatId] = useState(null);
 
-  // Получить дату по вебхуку при загрузке страницы
-  const fetchReportDate = async () => {
-    try {
-      const res = await fetch('https://lpaderina.store/webhook/get_current_date');
-      const data = await res.json();
-      if (data.date) setReportDate(data.date);
-    } catch (e) {
-      setReportDate(getToday());
-    }
-  };
+const fetchReportDate = async (chatIdForDate) => {
+  if (!chatIdForDate) return setReportDate(getToday());
+  try {
+    const res = await fetch('https://lpaderina.store/webhook/get_date', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatIdForDate })
+    });
+    const data = await res.json();
+    if (data.date) setReportDate(data.date);
+    else setReportDate(getToday());
+  } catch (e) {
+    setReportDate(getToday());
+  }
+};
 
-  // Получаем chat_id из query string (или раскомментируй блок ниже для Telegram WebApp)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const cid = params.get("chat_id");
-    if (cid) setChatId(cid);
-
-    // Альтернатива для Telegram WebApp (если нужно):
-    // if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-    //   setChatId(window.Telegram.WebApp.initDataUnsafe.chat && window.Telegram.WebApp.initDataUnsafe.chat.id);
-    // }
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const cid = params.get("chat_id");
+  if (cid) {
+    setChatId(cid);
+    fetchReportDate(cid);
+  }
 
     async function fetchInitialData() {
       // Номенклатура
