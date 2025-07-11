@@ -37,30 +37,31 @@ export default function StoneDailyReport() {
   const [sizes, setSizes] = useState([]);
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
- const [reportDate, setReportDate] = useState(getToday());
-const [chatId, setChatId] = useState(null);
+  const [reportDate, setReportDate] = useState(getToday());
+  const [chatId, setChatId] = useState(null);
 
-const fetchReportDate = async (chatIdForDate) => {
-  if (!chatIdForDate) return setReportDate(getToday());
-  try {
-    const res = await fetch('https://lpaderina.store/webhook/get_date', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatIdForDate })
-    });
-    const data = await res.json();
-    if (data.date) setReportDate(data.date);
-    else setReportDate(getToday());
-  } catch (e) {
-    setReportDate(getToday());
-  }
-};
+  // Получить дату по вебхуку с chat_id
+  const fetchReportDate = async (chatIdForDate) => {
+    if (!chatIdForDate) return setReportDate(getToday());
+    try {
+      const res = await fetch('https://lpaderina.store/webhook/get_date', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatIdForDate })
+      });
+      const data = await res.json();
+      if (data.date) setReportDate(data.date);
+      else setReportDate(getToday());
+    } catch (e) {
+      setReportDate(getToday());
+    }
+  };
 
-useEffect(() => {
+  // Первый useEffect — получаем chatId и загружаем справочники
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const cid = params.get("chat_id");
-  if (cid) setChatId(cid);
+    const params = new URLSearchParams(window.location.search);
+    const cid = params.get("chat_id");
+    if (cid) setChatId(cid);
 
     async function fetchInitialData() {
       // Номенклатура
@@ -86,13 +87,13 @@ useEffect(() => {
       }
     }
     fetchInitialData();
-    fetchReportDate();
   }, []);
 
+  // Второй useEffect — вызываем вебхук даты, когда chatId появился
   useEffect(() => {
-  if (chatId) fetchReportDate(chatId);
-}, [chatId]);
-  
+    if (chatId) fetchReportDate(chatId);
+  }, [chatId]);
+
   // Выбор фамилии: запрашиваем задание и (если есть) новую дату
   const handleSelectSheet = async (e) => {
     const value = e.target.value;
@@ -118,6 +119,7 @@ useEffect(() => {
       }
     }
   };
+
 
   // Сохранить новую или отредактированную позицию
   const handleSave = () => {
