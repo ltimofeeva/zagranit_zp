@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-// SVG-иконки (без изменений)
-const PencilIcon = () => (/* ... */);
-const TrashIcon = () => (/* ... */);
-const CrossIcon = () => (/* ... */);
+// SVG-иконки
+const PencilIcon = () => (
+  <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+  </svg>
+);
+const TrashIcon = () => (
+  <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+  </svg>
+);
+const CrossIcon = () => (
+  <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
 
 const getToday = () => {
   const d = new Date();
@@ -25,9 +37,8 @@ export default function StoneDailyReport() {
   const [sizes, setSizes] = useState([]);
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
-  const [reportDate, setReportDate] = useState(getToday()); // Дата для отчёта
+  const [reportDate, setReportDate] = useState(getToday());
   const [chatId, setChatId] = useState(null);
-
 
   // Получить дату по вебхуку при загрузке страницы
   const fetchReportDate = async () => {
@@ -40,11 +51,16 @@ export default function StoneDailyReport() {
     }
   };
 
-  // Получаем список сотрудников и номенклатуру
+  // Получаем chat_id из query string (или раскомментируй блок ниже для Telegram WebApp)
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const cid = params.get("chat_id");
-  if (cid) setChatId(cid);
+    const params = new URLSearchParams(window.location.search);
+    const cid = params.get("chat_id");
+    if (cid) setChatId(cid);
+
+    // Альтернатива для Telegram WebApp (если нужно):
+    // if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+    //   setChatId(window.Telegram.WebApp.initDataUnsafe.chat && window.Telegram.WebApp.initDataUnsafe.chat.id);
+    // }
 
     async function fetchInitialData() {
       // Номенклатура
@@ -70,7 +86,7 @@ export default function StoneDailyReport() {
       }
     }
     fetchInitialData();
-    fetchReportDate(); // подгружаем дату при открытии формы
+    fetchReportDate();
   }, []);
 
   // Выбор фамилии: запрашиваем задание и (если есть) новую дату
@@ -85,12 +101,11 @@ export default function StoneDailyReport() {
       const res = await fetch('https://lpaderina.store/webhook/daily_task', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sheet: value }),
+        body: JSON.stringify({ sheet: value, chat_id: chatId }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        // Если воркфлоу возвращает объект {positions: [...], date: "..."}
         if (data.date) setReportDate(data.date);
         if (data.positions) setPositions(data.positions);
         else setPositions(data || []);
@@ -152,7 +167,6 @@ export default function StoneDailyReport() {
 
   // Отправить данные
   const handleSubmit = async () => {
-    // qty гарантированно число
     const positionsToSend = positions.map(pos => ({
       ...pos,
       qty: Number(pos.qty)
@@ -164,8 +178,8 @@ export default function StoneDailyReport() {
       body: JSON.stringify({
         positions: positionsToSend,
         sheet: selectedSheet,
-        date: reportDate, // отправляем актуальную дату
-        chat_id: chatId 
+        date: reportDate,
+        chat_id: chatId
       }),
     });
     setShowSuccess(true);
@@ -265,11 +279,9 @@ export default function StoneDailyReport() {
                 </button>
               </span>
             </li>
-            {/* Режим редактирования позиции */}
             {isAdding && editIndex === i && (
               <li>
                 <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
-                  {/* Размер (readOnly) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Размер</label>
                     <input
@@ -280,7 +292,6 @@ export default function StoneDailyReport() {
                       disabled
                     />
                   </div>
-                  {/* Вид работы (readOnly) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Вид работы</label>
                     <input
@@ -291,7 +302,6 @@ export default function StoneDailyReport() {
                       disabled
                     />
                   </div>
-                  {/* Количество (редактируемое) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Количество</label>
                     <input
@@ -332,11 +342,9 @@ export default function StoneDailyReport() {
             )}
           </React.Fragment>
         ))}
-        {/* Форма добавления новой позиции */}
         {isAdding && editIndex === null && (
           <li>
             <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
-              {/* Размер */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Размер</label>
                 <input
@@ -388,7 +396,6 @@ export default function StoneDailyReport() {
                   </div>
                 )}
               </div>
-              {/* Вид работы */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Вид работы</label>
                 <input
@@ -439,7 +446,6 @@ export default function StoneDailyReport() {
                   </div>
                 )}
               </div>
-              {/* Количество */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Количество</label>
                 <input
@@ -479,7 +485,6 @@ export default function StoneDailyReport() {
           </li>
         )}
       </ul>
-      {/* Кнопки под списком */}
       {!isAdding && (
         <div className="daily-flex" style={{ marginTop: 18 }}>
           <button
