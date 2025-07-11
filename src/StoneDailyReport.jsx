@@ -57,12 +57,10 @@ const fetchReportDate = async (chatIdForDate) => {
 };
 
 useEffect(() => {
+  useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   const cid = params.get("chat_id");
-  if (cid) {
-    setChatId(cid);
-    fetchReportDate(cid);
-  }
+  if (cid) setChatId(cid);
 
     async function fetchInitialData() {
       // Номенклатура
@@ -91,6 +89,10 @@ useEffect(() => {
     fetchReportDate();
   }, []);
 
+  useEffect(() => {
+  if (chatId) fetchReportDate(chatId);
+}, [chatId]);
+  
   // Выбор фамилии: запрашиваем задание и (если есть) новую дату
   const handleSelectSheet = async (e) => {
     const value = e.target.value;
