@@ -143,11 +143,16 @@ const handleSubmit = async () => {
     ...pos,
     qty: Number(pos.qty)
   }));
+  const today = getToday();
 
   await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ positions: positionsToSend, sheet: selectedSheet }),
+    body: JSON.stringify({
+      positions: positionsToSend,
+      sheet: selectedSheet,
+      date: today
+    }),
   });
   setShowSuccess(true);
   setPositions([]);
