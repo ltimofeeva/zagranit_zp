@@ -72,7 +72,7 @@ export default function StoneDailyReport() {
       const dateString = today.toLocaleDateString("ru-RU");
       // Здесь укажи правильный URL твоего backend!
       const res = await fetch(
-        `https://lpaderina.store/webhook/today-assignment?sheet=${encodeURIComponent(selectedSheet)}&date=${encodeURIComponent(dateString)}`
+        `https://lpaderina.store/webhook-test/daily_task`
       );
       if (res.ok) {
         const data = await res.json();
