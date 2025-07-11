@@ -226,7 +226,7 @@ const handleSubmit = async () => {
           ))}
         </select>
       </div>
-      <div className="daily-sub">Введённые позиции:</div>
+      <div className="daily-sub">Список позиций:</div>
       <ul className="daily-list" style={{ marginTop: 14 }}>
         {positions.map((pos, i) => (
           <React.Fragment key={i}>
