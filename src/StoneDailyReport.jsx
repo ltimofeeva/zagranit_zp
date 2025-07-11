@@ -60,8 +60,10 @@ export default function StoneDailyReport() {
   // Первый useEffect — получаем chatId и загружаем справочники
   useEffect(() => {
     console.log("window.location.search:", window.location.search);
-    const params = new URLSearchParams(window.location.search);
-    const cid = params.get("chat_id");
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+    const tgChatId = window.Telegram.WebApp.initDataUnsafe.chat?.id;
+    console.log('TG WebApp chat.id:', tgChatId);
+    }
     console.log("cid:", cid);
     if (cid) setChatId(cid);
 
