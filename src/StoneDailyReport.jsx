@@ -1,88 +1,90 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-// SVG-иконки
+// SVG-иконки (можно оставить как есть)
 const PencilIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
+  <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+  </svg>
 );
 const TrashIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+  <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+  </svg>
 );
 const CrossIcon = () => (
-  <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
 );
 
-const getToday = () => {
-  const d = new Date();
-  return d.toLocaleDateString("ru-RU");
-};
-
 export default function StoneDailyReport() {
+  const [sheetOptions, setSheetOptions] = useState([]);
+  const [selectedSheet, setSelectedSheet] = useState("");
   const [positions, setPositions] = useState([]);
+  const [reportDate, setReportDate] = useState("");
   const [editIndex, setEditIndex] = useState(null);
   const [kolvo, setKolvo] = useState("");
   const [sizeInput, setSizeInput] = useState("");
   const [vidInput, setVidInput] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [sheetOptions, setSheetOptions] = useState([]);
-  const [selectedSheet, setSelectedSheet] = useState("");
   const [bySize, setBySize] = useState({});
   const [sizes, setSizes] = useState([]);
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
 
-  // Получаем список сотрудников и номенклатуру для добавления новых позиций
+  // Получаем список сотрудников (фамилий) при загрузке
   useEffect(() => {
-    async function fetchInitialData() {
-      // Номенклатура
-      const resNomenclature = await fetch('https://lpaderina.store/webhook/nomenklatura');
-      const dataNomenclature = await resNomenclature.json();
-      setBySize(dataNomenclature.bySize || {});
-      setSizes(Object.keys(dataNomenclature.bySize || {}));
-
-      // Сотрудники
-      const resSheets = await fetch('https://lpaderina.store/webhook/rabotniki');
-      const dataSheets = await resSheets.json();
+    async function fetchSheets() {
+      const res = await fetch('https://lpaderina.store/webhook/rabotniki');
+      const dataSheets = await res.json();
       if (dataSheets.list_name) {
-        const parsed = JSON.parse(dataSheets.list_name);
-        setSheetOptions(parsed);
-      }
-      if (Array.isArray(dataSheets) && dataSheets[0] && dataSheets[0].list_name) {
+        setSheetOptions(JSON.parse(dataSheets.list_name));
+      } else if (Array.isArray(dataSheets) && dataSheets[0]?.list_name) {
         try {
-          const options = JSON.parse(dataSheets[0].list_name);
-          setSheetOptions(options);
-        } catch (e) {
+          setSheetOptions(JSON.parse(dataSheets[0].list_name));
+        } catch {
           setSheetOptions([]);
         }
       }
     }
-    fetchInitialData();
+    // Получаем номенклатуру для добавления новых позиций
+    async function fetchNomenclature() {
+      const resNomenclature = await fetch('https://lpaderina.store/webhook/nomenklatura');
+      const dataNomenclature = await resNomenclature.json();
+      setBySize(dataNomenclature.bySize || {});
+      setSizes(Object.keys(dataNomenclature.bySize || {}));
+    }
+    fetchSheets();
+    fetchNomenclature();
   }, []);
 
-  // Запрашиваем задание у n8n по выбранной фамилии
+  // При выборе фамилии подгружаем задания и дату
   const handleSelectSheet = async (e) => {
     const value = e.target.value;
     setSelectedSheet(value);
-
-    // сбрасываем старые позиции и режимы
-    setPositions([]);
     setEditIndex(null);
     setIsAdding(false);
+    setKolvo("");
+    setSizeInput("");
+    setVidInput("");
+    setPositions([]);
+    setReportDate("");
 
-    // Запрос на n8n webhook для подгрузки задания
     if (value) {
       const res = await fetch('https://lpaderina.store/webhook/daily_task', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sheet: value }),
       });
-
       if (res.ok) {
         const data = await res.json();
-        setPositions(data || []);
+        setPositions(data.positions || []);
+        setReportDate(data.date || "");
       } else {
         setPositions([]);
+        setReportDate("");
       }
     }
   };
@@ -137,30 +139,29 @@ export default function StoneDailyReport() {
     setKolvo("");
   };
 
-const handleSubmit = async () => {
-  // qty гарантированно число
-  const positionsToSend = positions.map(pos => ({
-    ...pos,
-    qty: Number(pos.qty)
-  }));
-  const today = getToday();
+  // Отправить данные (пример, можно подправить под свои нужды)
+  const handleSubmit = async () => {
+    const positionsToSend = positions.map(pos => ({
+      ...pos,
+      qty: Number(pos.qty)
+    }));
 
-  await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      positions: positionsToSend,
-      sheet: selectedSheet,
-      date: today
-    }),
-  });
-  setShowSuccess(true);
-  setPositions([]);
-  setEditIndex(null);
-  setKolvo("");
-  setIsAdding(false);
-  setTimeout(() => setShowSuccess(false), 4000);
-};
+    await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        positions: positionsToSend,
+        sheet: selectedSheet,
+        date: reportDate,
+      }),
+    });
+    setShowSuccess(true);
+    setPositions([]);
+    setEditIndex(null);
+    setKolvo("");
+    setIsAdding(false);
+    setTimeout(() => setShowSuccess(false), 4000);
+  };
 
   // Фильтрация для выпадающих списков
   const filteredSizes = sizes.filter((s) =>
@@ -171,31 +172,18 @@ const handleSubmit = async () => {
     v.toLowerCase().includes(vidInput.toLowerCase())
   );
 
-  // Блок "Спасибо за труд"
-  if (showSuccess) {
-    return (
-      <div className="daily-form-main">
-        <div className="daily-title">Дата — {getToday()}</div>
-        <div className="daily-sub" style={{ marginTop: 40, fontSize: 24, textAlign: "center", color: "#22c55e" }}>
-          Спасибо за твой труд!
-        </div>
-      </div>
-    );
-  }
-
-  // --- ПЕРВЫЙ ЭКРАН: только дата и фамилия ---
+  // --- Первый экран: только выбор фамилии ---
   if (!selectedSheet) {
     return (
       <div className="daily-form-main">
-        <div className="daily-title">Дата — {getToday()}</div>
+        <div className="daily-title">Выберите фамилию</div>
         <div className="daily-field">
-          <label>Фамилия</label>
           <select
             className="daily-input"
             value={selectedSheet}
             onChange={handleSelectSheet}
           >
-            <option value="">Выберите фамилию...</option>
+            <option value="">Фамилия...</option>
             {sheetOptions.map(opt => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -207,25 +195,21 @@ const handleSubmit = async () => {
     );
   }
 
-  // --- ОСНОВНОЙ ЭКРАН: фамилия выбрана, показываем позиции и кнопки ---
+  // --- Остальная форма ---
+  if (showSuccess) {
+    return (
+      <div className="daily-form-main">
+        <div className="daily-title">Дата: {reportDate || "—"}</div>
+        <div className="daily-sub" style={{ marginTop: 40, fontSize: 24, textAlign: "center", color: "#22c55e" }}>
+          Спасибо за твой труд!
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="daily-form-main">
-      <div className="daily-title">Дата — {getToday()}</div>
-      <div className="daily-field">
-        <label>Фамилия</label>
-        <select
-          className="daily-input"
-          value={selectedSheet}
-          onChange={handleSelectSheet}
-        >
-          <option value="">Выберите фамилию...</option>
-          {sheetOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="daily-title">Дата: {reportDate || "—"}</div>
       <div className="daily-sub">Список позиций:</div>
       <ul className="daily-list" style={{ marginTop: 14 }}>
         {positions.map((pos, i) => (
@@ -255,7 +239,6 @@ const handleSubmit = async () => {
             {isAdding && editIndex === i && (
               <li>
                 <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
-                  {/* Размер (readOnly) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Размер</label>
                     <input
@@ -266,7 +249,6 @@ const handleSubmit = async () => {
                       disabled
                     />
                   </div>
-                  {/* Вид работы (readOnly) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Вид работы</label>
                     <input
@@ -277,7 +259,6 @@ const handleSubmit = async () => {
                       disabled
                     />
                   </div>
-                  {/* Количество (редактируемое) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Количество</label>
                     <input
@@ -310,7 +291,7 @@ const handleSubmit = async () => {
                       style={{ marginLeft: 8 }}
                       onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); }}
                     >
-                      Закрыть
+                      Завершить редактирование
                     </button>
                   </div>
                 </div>
@@ -322,7 +303,6 @@ const handleSubmit = async () => {
         {isAdding && editIndex === null && (
           <li>
             <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
-              {/* Размер */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Размер</label>
                 <input
@@ -374,7 +354,6 @@ const handleSubmit = async () => {
                   </div>
                 )}
               </div>
-              {/* Вид работы */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Вид работы</label>
                 <input
@@ -425,7 +404,6 @@ const handleSubmit = async () => {
                   </div>
                 )}
               </div>
-              {/* Количество */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Количество</label>
                 <input
@@ -465,7 +443,6 @@ const handleSubmit = async () => {
           </li>
         )}
       </ul>
-      {/* Кнопки под списком */}
       {!isAdding && (
         <div className="daily-flex" style={{ marginTop: 18 }}>
           <button
