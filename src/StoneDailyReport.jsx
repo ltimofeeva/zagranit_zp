@@ -3,19 +3,13 @@ import "./styles.css";
 
 // SVG-иконки
 const PencilIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-    <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-  </svg>
+  <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
 );
 const TrashIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-  </svg>
+  <svg width="18" height="18" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
 );
 const CrossIcon = () => (
-  <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-  </svg>
+  <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 );
 
 const getToday = () => {
@@ -37,43 +31,9 @@ export default function StoneDailyReport() {
   const [sizes, setSizes] = useState([]);
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
-  const [reportDate, setReportDate] = useState(getToday());
-  const [chatId, setChatId] = useState(null);
 
-  // Получить дату по вебхуку с chat_id
-  const fetchReportDate = async (chatIdForDate) => {
-    if (!chatIdForDate) return setReportDate(getToday());
-    try {
-      const res = await fetch('https://lpaderina.store/webhook/get_date', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatIdForDate })
-      });
-      const data = await res.json();
-      if (data.date) setReportDate(data.date);
-      else setReportDate(getToday());
-    } catch (e) {
-      setReportDate(getToday());
-    }
-  };
-
+  // Получаем список сотрудников и номенклатуру для добавления новых позиций
   useEffect(() => {
-  console.log("window.location.search:", window.location.search);
-
-  // ДОБАВЬ ЭТУ СТРОЧКУ!
-  const params = new URLSearchParams(window.location.search);
-  const cid = params.get("chat_id");
-
-  if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-    const tgChatId = window.Telegram.WebApp.initDataUnsafe.chat?.id;
-    console.log('TG WebApp chat.id:', tgChatId);
-  }
-  console.log("cid:", cid);
-  if (cid) setChatId(cid);
-
-  // остальной код...
-
-
     async function fetchInitialData() {
       // Номенклатура
       const resNomenclature = await fetch('https://lpaderina.store/webhook/nomenklatura');
@@ -100,37 +60,32 @@ export default function StoneDailyReport() {
     fetchInitialData();
   }, []);
 
-  // Второй useEffect — вызываем вебхук даты, когда chatId появился
-  useEffect(() => {
-    if (chatId) fetchReportDate(chatId);
-  }, [chatId]);
-
-  // Выбор фамилии: запрашиваем задание и (если есть) новую дату
+  // Запрашиваем задание у n8n по выбранной фамилии
   const handleSelectSheet = async (e) => {
     const value = e.target.value;
     setSelectedSheet(value);
+
+    // сбрасываем старые позиции и режимы
     setPositions([]);
     setEditIndex(null);
     setIsAdding(false);
 
+    // Запрос на n8n webhook для подгрузки задания
     if (value) {
       const res = await fetch('https://lpaderina.store/webhook/daily_task', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sheet: value, chat_id: chatId }),
+        body: JSON.stringify({ sheet: value }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        if (data.date) setReportDate(data.date);
-        if (data.positions) setPositions(data.positions);
-        else setPositions(data || []);
+        setPositions(data || []);
       } else {
         setPositions([]);
       }
     }
   };
-
 
   // Сохранить новую или отредактированную позицию
   const handleSave = () => {
@@ -182,30 +137,30 @@ export default function StoneDailyReport() {
     setKolvo("");
   };
 
-  // Отправить данные
-  const handleSubmit = async () => {
-    const positionsToSend = positions.map(pos => ({
-      ...pos,
-      qty: Number(pos.qty)
-    }));
+const handleSubmit = async () => {
+  // qty гарантированно число
+  const positionsToSend = positions.map(pos => ({
+    ...pos,
+    qty: Number(pos.qty)
+  }));
+  const today = getToday();
 
-    await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        positions: positionsToSend,
-        sheet: selectedSheet,
-        date: reportDate,
-        chat_id: chatId
-      }),
-    });
-    setShowSuccess(true);
-    setPositions([]);
-    setEditIndex(null);
-    setKolvo("");
-    setIsAdding(false);
-    setTimeout(() => setShowSuccess(false), 4000);
-  };
+  await fetch('https://lpaderina.store/webhook/70e744f0-35d8-4252-ba73-25db1d52dbf9', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      positions: positionsToSend,
+      sheet: selectedSheet,
+      date: today
+    }),
+  });
+  setShowSuccess(true);
+  setPositions([]);
+  setEditIndex(null);
+  setKolvo("");
+  setIsAdding(false);
+  setTimeout(() => setShowSuccess(false), 4000);
+};
 
   // Фильтрация для выпадающих списков
   const filteredSizes = sizes.filter((s) =>
@@ -220,7 +175,7 @@ export default function StoneDailyReport() {
   if (showSuccess) {
     return (
       <div className="daily-form-main">
-        <div className="daily-title">Дата — {reportDate}</div>
+        <div className="daily-title">Дата — {getToday()}</div>
         <div className="daily-sub" style={{ marginTop: 40, fontSize: 24, textAlign: "center", color: "#22c55e" }}>
           Спасибо за твой труд!
         </div>
@@ -232,7 +187,7 @@ export default function StoneDailyReport() {
   if (!selectedSheet) {
     return (
       <div className="daily-form-main">
-        <div className="daily-title">Дата — {reportDate}</div>
+        <div className="daily-title">Дата — {getToday()}</div>
         <div className="daily-field">
           <label>Фамилия</label>
           <select
@@ -255,7 +210,7 @@ export default function StoneDailyReport() {
   // --- ОСНОВНОЙ ЭКРАН: фамилия выбрана, показываем позиции и кнопки ---
   return (
     <div className="daily-form-main">
-      <div className="daily-title">Дата — {reportDate}</div>
+      <div className="daily-title">Дата — {getToday()}</div>
       <div className="daily-field">
         <label>Фамилия</label>
         <select
@@ -296,9 +251,11 @@ export default function StoneDailyReport() {
                 </button>
               </span>
             </li>
+            {/* Режим редактирования позиции */}
             {isAdding && editIndex === i && (
               <li>
                 <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
+                  {/* Размер (readOnly) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Размер</label>
                     <input
@@ -309,6 +266,7 @@ export default function StoneDailyReport() {
                       disabled
                     />
                   </div>
+                  {/* Вид работы (readOnly) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Вид работы</label>
                     <input
@@ -319,6 +277,7 @@ export default function StoneDailyReport() {
                       disabled
                     />
                   </div>
+                  {/* Количество (редактируемое) */}
                   <div className="daily-field" style={{ position: "relative" }}>
                     <label>Количество</label>
                     <input
@@ -359,9 +318,11 @@ export default function StoneDailyReport() {
             )}
           </React.Fragment>
         ))}
+        {/* Форма добавления новой позиции */}
         {isAdding && editIndex === null && (
           <li>
             <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
+              {/* Размер */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Размер</label>
                 <input
@@ -413,6 +374,7 @@ export default function StoneDailyReport() {
                   </div>
                 )}
               </div>
+              {/* Вид работы */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Вид работы</label>
                 <input
@@ -463,6 +425,7 @@ export default function StoneDailyReport() {
                   </div>
                 )}
               </div>
+              {/* Количество */}
               <div className="daily-field" style={{ position: "relative" }}>
                 <label>Количество</label>
                 <input
@@ -502,6 +465,7 @@ export default function StoneDailyReport() {
           </li>
         )}
       </ul>
+      {/* Кнопки под списком */}
       {!isAdding && (
         <div className="daily-flex" style={{ marginTop: 18 }}>
           <button
