@@ -61,32 +61,37 @@ export default function StoneDailyReport() {
 
   // При выборе фамилии подгружаем задания и дату
   const handleSelectSheet = async (e) => {
-    const value = e.target.value;
-    setSelectedSheet(value);
-    setEditIndex(null);
-    setIsAdding(false);
-    setKolvo("");
-    setSizeInput("");
-    setVidInput("");
-    setPositions([]);
-    setReportDate("");
+  const value = e.target.value;
+  setSelectedSheet(value);
+  setEditIndex(null);
+  setIsAdding(false);
+  setKolvo("");
+  setSizeInput("");
+  setVidInput("");
+  setPositions([]);
+  setReportDate("");
 
-    if (value) {
-      const res = await fetch('https://lpaderina.store/webhook/daily_task', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sheet: value }),
-      });
-      if (res.ok) {
-        const data = await res.json();
+  if (value) {
+    const res = await fetch('https://lpaderina.store/webhook/daily_task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sheet: value }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setPositions(data);
+        setReportDate(data[0]?.date || "");
+      } else {
         setPositions(data.positions || []);
         setReportDate(data.positions?.[0]?.date || "");
-      } else {
-        setPositions([]);
-        setReportDate("");
       }
+    } else {
+      setPositions([]);
+      setReportDate("");
     }
-  };
+  }
+};
 
   // Сохранить новую или отредактированную позицию
   const handleSave = () => {
