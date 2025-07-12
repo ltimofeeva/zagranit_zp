@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-// SVG-иконки (можно оставить как есть)
+// SVG-иконки
 const PencilIcon = () => (
   <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
     <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
@@ -34,7 +34,7 @@ export default function StoneDailyReport() {
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
 
-  // Получаем список сотрудников (фамилий) при загрузке
+  // Загружаем список сотрудников (фамилий) и номенклатуру при загрузке
   useEffect(() => {
     async function fetchSheets() {
       const res = await fetch('https://lpaderina.store/webhook/rabotniki');
@@ -49,7 +49,6 @@ export default function StoneDailyReport() {
         }
       }
     }
-    // Получаем номенклатуру для добавления новых позиций
     async function fetchNomenclature() {
       const resNomenclature = await fetch('https://lpaderina.store/webhook/nomenklatura');
       const dataNomenclature = await resNomenclature.json();
@@ -139,7 +138,7 @@ export default function StoneDailyReport() {
     setKolvo("");
   };
 
-  // Отправить данные (пример, можно подправить под свои нужды)
+  // Отправить данные
   const handleSubmit = async () => {
     const positionsToSend = positions.map(pos => ({
       ...pos,
@@ -172,12 +171,12 @@ export default function StoneDailyReport() {
     v.toLowerCase().includes(vidInput.toLowerCase())
   );
 
-  // --- Первый экран: только выбор фамилии ---
-  if (!selectedSheet) {
-    return (
-      <div className="daily-form-main">
-        <div className="daily-title">Выберите фамилию</div>
-        <div className="daily-field">
+  return (
+    <div className="daily-form-main">
+      {/* Фамилия: select до выбора, read-only после выбора */}
+      <div className="daily-field">
+        <label>Фамилия</label>
+        {!selectedSheet ? (
           <select
             className="daily-input"
             value={selectedSheet}
@@ -190,276 +189,283 @@ export default function StoneDailyReport() {
               </option>
             ))}
           </select>
-        </div>
+        ) : (
+          <input
+            className="daily-input"
+            value={sheetOptions.find(opt => opt.value === selectedSheet)?.label || selectedSheet}
+            readOnly
+            style={{ background: "#f1f5f9", color: "#2d3748", fontWeight: 500 }}
+          />
+        )}
       </div>
-    );
-  }
 
-  // --- Остальная форма ---
-  if (showSuccess) {
-    return (
-      <div className="daily-form-main">
-        <div className="daily-title">Дата: {reportDate || "—"}</div>
-        <div className="daily-sub" style={{ marginTop: 40, fontSize: 24, textAlign: "center", color: "#22c55e" }}>
-          Спасибо за твой труд!
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="daily-form-main">
-      <div className="daily-title">Дата: {reportDate || "—"}</div>
-      <div className="daily-sub">Список позиций:</div>
-      <ul className="daily-list" style={{ marginTop: 14 }}>
-        {positions.map((pos, i) => (
-          <React.Fragment key={i}>
-            <li>
-              <span>
-                {pos.size} {pos.vid} — {pos.qty} шт.
-              </span>
-              <span style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-                <button
-                  className="icon-btn"
-                  title="Редактировать"
-                  onClick={() => handleEditPosition(i)}
-                >
-                  <PencilIcon />
-                </button>
-                <button
-                  className="icon-btn"
-                  title="Удалить"
-                  onClick={() => handleDeletePosition(i)}
-                >
-                  <TrashIcon />
-                </button>
-              </span>
-            </li>
-            {/* Режим редактирования позиции */}
-            {isAdding && editIndex === i && (
-              <li>
-                <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
-                  <div className="daily-field" style={{ position: "relative" }}>
-                    <label>Размер</label>
-                    <input
-                      type="text"
-                      className="daily-input"
-                      value={positions[i].size}
-                      readOnly
-                      disabled
-                    />
-                  </div>
-                  <div className="daily-field" style={{ position: "relative" }}>
-                    <label>Вид работы</label>
-                    <input
-                      type="text"
-                      className="daily-input"
-                      value={positions[i].vid}
-                      readOnly
-                      disabled
-                    />
-                  </div>
-                  <div className="daily-field" style={{ position: "relative" }}>
-                    <label>Количество</label>
-                    <input
-                      type="number"
-                      className="daily-input"
-                      min="1"
-                      value={kolvo}
-                      onChange={(e) => setKolvo(e.target.value)}
-                    />
-                    {kolvo && (
-                      <button
-                        type="button"
-                        className="clear-btn"
-                        onClick={() => setKolvo("")}
-                        tabIndex={-1}
-                        aria-label="Очистить поле"
-                      ><CrossIcon /></button>
-                    )}
-                  </div>
-                  <div className="daily-flex">
-                    <button
-                      className="daily-btn-main"
-                      onClick={handleSave}
-                      disabled={!kolvo}
-                    >
-                      Сохранить
-                    </button>
-                    <button
-                      className="daily-btn-alt daily-btn-small"
-                      style={{ marginLeft: 8 }}
-                      onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); }}
-                    >
-                      Завершить редактирование
-                    </button>
-                  </div>
-                </div>
-              </li>
-            )}
-          </React.Fragment>
-        ))}
-        {/* Форма добавления новой позиции */}
-        {isAdding && editIndex === null && (
-          <li>
-            <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
-              <div className="daily-field" style={{ position: "relative" }}>
-                <label>Размер</label>
-                <input
-                  type="text"
-                  className="daily-input"
-                  placeholder="Начните вводить или выберите..."
-                  value={sizeInput}
-                  onChange={e => {
-                    setSizeInput(e.target.value);
-                    setShowSizes(true);
-                    setVidInput("");
-                  }}
-                  onFocus={() => setShowSizes(true)}
-                  onBlur={() => setTimeout(() => setShowSizes(false), 100)}
-                  autoComplete="off"
-                />
-                {sizeInput && (
-                  <button
-                    type="button"
-                    className="clear-btn"
-                    onClick={() => setSizeInput("")}
-                    tabIndex={-1}
-                    aria-label="Очистить поле"
-                  ><CrossIcon /></button>
-                )}
-                <button
-                  type="button"
-                  className="combo-arrow"
-                  tabIndex={-1}
-                  onMouseDown={e => {
-                    e.preventDefault();
-                    setShowSizes(v => !v);
-                  }}
-                >▼</button>
-                {showSizes && filteredSizes.length > 0 && (
-                  <div className="daily-list-small">
-                    {filteredSizes.map((s, i) => (
-                      <div
-                        key={i}
-                        onMouseDown={() => {
-                          setSizeInput(s);
-                          setShowSizes(false);
-                          setVidInput("");
-                        }}
-                      >
-                        {s}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="daily-field" style={{ position: "relative" }}>
-                <label>Вид работы</label>
-                <input
-                  type="text"
-                  className="daily-input"
-                  placeholder="Начните вводить или выберите..."
-                  value={vidInput}
-                  onChange={e => {
-                    setVidInput(e.target.value);
-                    setShowVids(true);
-                  }}
-                  onFocus={() => setShowVids(true)}
-                  onBlur={() => setTimeout(() => setShowVids(false), 100)}
-                  autoComplete="off"
-                  disabled={!sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length)}
-                />
-                {vidInput && (
-                  <button
-                    type="button"
-                    className="clear-btn"
-                    onClick={() => setVidInput("")}
-                    tabIndex={-1}
-                    aria-label="Очистить поле"
-                  ><CrossIcon /></button>
-                )}
-                <button
-                  type="button"
-                  className="combo-arrow"
-                  tabIndex={-1}
-                  onMouseDown={e => {
-                    e.preventDefault();
-                    setShowVids(v => !v);
-                  }}
-                >▼</button>
-                {showVids && filteredVids.length > 0 && (
-                  <div className="daily-list-small">
-                    {filteredVids.map((v, i) => (
-                      <div
-                        key={i}
-                        onMouseDown={() => {
-                          setVidInput(v);
-                          setShowVids(false);
-                        }}
-                      >
-                        {v}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="daily-field" style={{ position: "relative" }}>
-                <label>Количество</label>
-                <input
-                  type="number"
-                  className="daily-input"
-                  min="1"
-                  value={kolvo}
-                  onChange={(e) => setKolvo(e.target.value)}
-                />
-                {kolvo && (
-                  <button
-                    type="button"
-                    className="clear-btn"
-                    onClick={() => setKolvo("")}
-                    tabIndex={-1}
-                    aria-label="Очистить поле"
-                  ><CrossIcon /></button>
-                )}
-              </div>
-              <div className="daily-flex">
-                <button
-                  className="daily-btn-main"
-                  onClick={handleSave}
-                  disabled={!sizeInput || !vidInput || !kolvo}
-                >
-                  Сохранить
-                </button>
-                <button
-                  className="daily-btn-alt daily-btn-small"
-                  style={{ marginLeft: 8 }}
-                  onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); }}
-                >
-                  Завершить редактирование
-                </button>
+      {/* Остальная форма: только если выбрана фамилия */}
+      {selectedSheet && (
+        <>
+          {showSuccess ? (
+            <div>
+              <div className="daily-title">Дата: {reportDate || "—"}</div>
+              <div className="daily-sub" style={{ marginTop: 40, fontSize: 24, textAlign: "center", color: "#22c55e" }}>
+                Спасибо за твой труд!
               </div>
             </div>
-          </li>
-        )}
-      </ul>
-      {!isAdding && (
-        <div className="daily-flex" style={{ marginTop: 18 }}>
-          <button
-            className="daily-btn-main"
-            onClick={handleAddPosition}
-          >
-            Добавить позицию
-          </button>
-          <button
-            className="daily-btn-alt daily-btn-small"
-            style={{ marginLeft: 8 }}
-            onClick={handleSubmit}
-            disabled={positions.length === 0}
-          >
-            Отправить данные
-          </button>
-        </div>
+          ) : (
+            <>
+              <div className="daily-title">Дата: {reportDate || "—"}</div>
+              <div className="daily-sub">Список позиций:</div>
+              <ul className="daily-list" style={{ marginTop: 14 }}>
+                {positions.map((pos, i) => (
+                  <React.Fragment key={i}>
+                    <li>
+                      <span>
+                        {pos.size} {pos.vid} — {pos.qty} шт.
+                      </span>
+                      <span style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                        <button
+                          className="icon-btn"
+                          title="Редактировать"
+                          onClick={() => handleEditPosition(i)}
+                        >
+                          <PencilIcon />
+                        </button>
+                        <button
+                          className="icon-btn"
+                          title="Удалить"
+                          onClick={() => handleDeletePosition(i)}
+                        >
+                          <TrashIcon />
+                        </button>
+                      </span>
+                    </li>
+                    {/* Режим редактирования позиции */}
+                    {isAdding && editIndex === i && (
+                      <li>
+                        <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
+                          <div className="daily-field" style={{ position: "relative" }}>
+                            <label>Размер</label>
+                            <input
+                              type="text"
+                              className="daily-input"
+                              value={positions[i].size}
+                              readOnly
+                              disabled
+                            />
+                          </div>
+                          <div className="daily-field" style={{ position: "relative" }}>
+                            <label>Вид работы</label>
+                            <input
+                              type="text"
+                              className="daily-input"
+                              value={positions[i].vid}
+                              readOnly
+                              disabled
+                            />
+                          </div>
+                          <div className="daily-field" style={{ position: "relative" }}>
+                            <label>Количество</label>
+                            <input
+                              type="number"
+                              className="daily-input"
+                              min="1"
+                              value={kolvo}
+                              onChange={(e) => setKolvo(e.target.value)}
+                            />
+                            {kolvo && (
+                              <button
+                                type="button"
+                                className="clear-btn"
+                                onClick={() => setKolvo("")}
+                                tabIndex={-1}
+                                aria-label="Очистить поле"
+                              ><CrossIcon /></button>
+                            )}
+                          </div>
+                          <div className="daily-flex">
+                            <button
+                              className="daily-btn-main"
+                              onClick={handleSave}
+                              disabled={!kolvo}
+                            >
+                              Сохранить
+                            </button>
+                            <button
+                              className="daily-btn-alt daily-btn-small"
+                              style={{ marginLeft: 8 }}
+                              onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); }}
+                            >
+                              Завершить редактирование
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    )}
+                  </React.Fragment>
+                ))}
+                {/* Форма добавления новой позиции */}
+                {isAdding && editIndex === null && (
+                  <li>
+                    <div className="daily-edit-form" style={{ marginTop: 8, marginBottom: 10 }}>
+                      <div className="daily-field" style={{ position: "relative" }}>
+                        <label>Размер</label>
+                        <input
+                          type="text"
+                          className="daily-input"
+                          placeholder="Начните вводить или выберите..."
+                          value={sizeInput}
+                          onChange={e => {
+                            setSizeInput(e.target.value);
+                            setShowSizes(true);
+                            setVidInput("");
+                          }}
+                          onFocus={() => setShowSizes(true)}
+                          onBlur={() => setTimeout(() => setShowSizes(false), 100)}
+                          autoComplete="off"
+                        />
+                        {sizeInput && (
+                          <button
+                            type="button"
+                            className="clear-btn"
+                            onClick={() => setSizeInput("")}
+                            tabIndex={-1}
+                            aria-label="Очистить поле"
+                          ><CrossIcon /></button>
+                        )}
+                        <button
+                          type="button"
+                          className="combo-arrow"
+                          tabIndex={-1}
+                          onMouseDown={e => {
+                            e.preventDefault();
+                            setShowSizes(v => !v);
+                          }}
+                        >▼</button>
+                        {showSizes && filteredSizes.length > 0 && (
+                          <div className="daily-list-small">
+                            {filteredSizes.map((s, i) => (
+                              <div
+                                key={i}
+                                onMouseDown={() => {
+                                  setSizeInput(s);
+                                  setShowSizes(false);
+                                  setVidInput("");
+                                }}
+                              >
+                                {s}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="daily-field" style={{ position: "relative" }}>
+                        <label>Вид работы</label>
+                        <input
+                          type="text"
+                          className="daily-input"
+                          placeholder="Начните вводить или выберите..."
+                          value={vidInput}
+                          onChange={e => {
+                            setVidInput(e.target.value);
+                            setShowVids(true);
+                          }}
+                          onFocus={() => setShowVids(true)}
+                          onBlur={() => setTimeout(() => setShowVids(false), 100)}
+                          autoComplete="off"
+                          disabled={!sizeInput || !(bySize[sizeInput] && bySize[sizeInput].length)}
+                        />
+                        {vidInput && (
+                          <button
+                            type="button"
+                            className="clear-btn"
+                            onClick={() => setVidInput("")}
+                            tabIndex={-1}
+                            aria-label="Очистить поле"
+                          ><CrossIcon /></button>
+                        )}
+                        <button
+                          type="button"
+                          className="combo-arrow"
+                          tabIndex={-1}
+                          onMouseDown={e => {
+                            e.preventDefault();
+                            setShowVids(v => !v);
+                          }}
+                        >▼</button>
+                        {showVids && filteredVids.length > 0 && (
+                          <div className="daily-list-small">
+                            {filteredVids.map((v, i) => (
+                              <div
+                                key={i}
+                                onMouseDown={() => {
+                                  setVidInput(v);
+                                  setShowVids(false);
+                                }}
+                              >
+                                {v}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="daily-field" style={{ position: "relative" }}>
+                        <label>Количество</label>
+                        <input
+                          type="number"
+                          className="daily-input"
+                          min="1"
+                          value={kolvo}
+                          onChange={(e) => setKolvo(e.target.value)}
+                        />
+                        {kolvo && (
+                          <button
+                            type="button"
+                            className="clear-btn"
+                            onClick={() => setKolvo("")}
+                            tabIndex={-1}
+                            aria-label="Очистить поле"
+                          ><CrossIcon /></button>
+                        )}
+                      </div>
+                      <div className="daily-flex">
+                        <button
+                          className="daily-btn-main"
+                          onClick={handleSave}
+                          disabled={!sizeInput || !vidInput || !kolvo}
+                        >
+                          Сохранить
+                        </button>
+                        <button
+                          className="daily-btn-alt daily-btn-small"
+                          style={{ marginLeft: 8 }}
+                          onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); }}
+                        >
+                          Завершить редактирование
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                )}
+              </ul>
+              {!isAdding && (
+                <div className="daily-flex" style={{ marginTop: 18 }}>
+                  <button
+                    className="daily-btn-main"
+                    onClick={handleAddPosition}
+                  >
+                    Добавить позицию
+                  </button>
+                  <button
+                    className="daily-btn-alt daily-btn-small"
+                    style={{ marginLeft: 8 }}
+                    onClick={handleSubmit}
+                    disabled={positions.length === 0}
+                  >
+                    Отправить данные
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   );
