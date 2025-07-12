@@ -310,7 +310,7 @@ const handleSubmit = async () => {
                       style={{ marginLeft: 8 }}
                       onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); }}
                     >
-                      Завершить редактирование
+                      Закрыть
                     </button>
                   </div>
                 </div>
