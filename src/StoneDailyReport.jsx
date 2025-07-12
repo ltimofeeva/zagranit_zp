@@ -174,7 +174,7 @@ export default function StoneDailyReport() {
   return (
     <div className="daily-form-main">
       {/* Фамилия: select до выбора, read-only после выбора */}
-      <div className="daily-field">
+      <div className="daily-title">
         <label>Фамилия</label>
         {!selectedSheet ? (
           <select
