@@ -81,7 +81,8 @@ export default function StoneDailyReport() {
       if (res.ok) {
         const data = await res.json();
         setPositions(data.positions || []);
-        setReportDate(data.date || "");
+        setReportDate(data.positions?.[0]?.date || "");
+);
       } else {
         setPositions([]);
         setReportDate("");
