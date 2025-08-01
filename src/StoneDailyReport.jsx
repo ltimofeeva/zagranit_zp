@@ -34,6 +34,9 @@ export default function StoneDailyReport() {
   const [showSizes, setShowSizes] = useState(false);
   const [showVids, setShowVids] = useState(false);
 
+  // NEW: Состояние для ошибок формы
+  const [formError, setFormError] = useState("");
+
   // Загружаем список сотрудников (фамилий) и номенклатуру при загрузке
   useEffect(() => {
     async function fetchSheets() {
@@ -70,6 +73,7 @@ export default function StoneDailyReport() {
     setVidInput("");
     setPositions([]);
     setReportDate("");
+    setFormError(""); // NEW
 
     if (value) {
       const res = await fetch('https://lpaderina.store/webhook/daily_task', {
@@ -93,22 +97,46 @@ export default function StoneDailyReport() {
     }
   };
 
-  // Сохранить новую или отредактированную позицию
+  // NEW: Проверка на дубль по размеру и виду
+  function isDuplicate(size, vid, ignoreIndex = null) {
+    return positions.some((pos, idx) =>
+      idx !== ignoreIndex && pos.size === size && pos.vid === vid
+    );
+  }
+
+  // Сохранить новую или отредактированную позицию (с проверкой дубля)
   const handleSave = () => {
+    setFormError(""); // NEW
+
+    // Добавление новой позиции
+    if (editIndex === null && sizeInput && vidInput && kolvo) {
+      if (isDuplicate(sizeInput, vidInput)) {
+        setFormError("Такая позиция уже добавлена. Вы можете её отредактировать.");
+        return;
+      }
+      setPositions([...positions, { size: sizeInput, vid: vidInput, qty: kolvo }]);
+      setSizeInput("");
+      setVidInput("");
+      setKolvo("");
+      setIsAdding(false);
+      return;
+    }
+
+    // Редактирование позиции
     if (editIndex !== null && kolvo) {
+      const editingSize = positions[editIndex].size;
+      const editingVid = positions[editIndex].vid;
+      if (isDuplicate(editingSize, editingVid, editIndex)) {
+        setFormError("Такая позиция уже есть. Вы можете её отредактировать.");
+        return;
+      }
       const updated = [...positions];
       updated[editIndex] = { ...updated[editIndex], qty: kolvo };
       setPositions(updated);
       setEditIndex(null);
       setKolvo("");
       setIsAdding(false);
-    }
-    if (editIndex === null && sizeInput && vidInput && kolvo) {
-      setPositions([...positions, { size: sizeInput, vid: vidInput, qty: kolvo }]);
-      setSizeInput("");
-      setVidInput("");
-      setKolvo("");
-      setIsAdding(false);
+      return;
     }
   };
 
@@ -119,6 +147,7 @@ export default function StoneDailyReport() {
     setSizeInput("");
     setVidInput("");
     setKolvo("");
+    setFormError(""); // NEW
   };
 
   // Для редактирования существующей позиции
@@ -129,6 +158,7 @@ export default function StoneDailyReport() {
     setIsAdding(true);
     setSizeInput(pos.size);
     setVidInput(pos.vid);
+    setFormError(""); // NEW
   };
 
   // Удалить позицию
@@ -141,6 +171,7 @@ export default function StoneDailyReport() {
     setSizeInput("");
     setVidInput("");
     setKolvo("");
+    setFormError(""); // NEW
   };
 
   // Отправить данные
@@ -301,6 +332,19 @@ export default function StoneDailyReport() {
                               ><CrossIcon /></button>
                             )}
                           </div>
+                          {/* NEW: Вывод ошибки */}
+                          {formError && (
+                            <div style={{
+                              color: "#dc2626",
+                              background: "#fee2e2",
+                              padding: "6px 12px",
+                              borderRadius: 8,
+                              fontSize: 15,
+                              margin: "8px 0"
+                            }}>
+                              {formError}
+                            </div>
+                          )}
                           <div className="daily-flex">
                             <button
                               className="daily-btn-main"
@@ -312,7 +356,7 @@ export default function StoneDailyReport() {
                             <button
                               className="daily-btn-alt daily-btn-small"
                               style={{ marginLeft: 8 }}
-                              onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); }}
+                              onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); setFormError(""); }}
                             >
                               Завершить редактирование
                             </button>
@@ -446,6 +490,19 @@ export default function StoneDailyReport() {
                           ><CrossIcon /></button>
                         )}
                       </div>
+                      {/* NEW: Вывод ошибки */}
+                      {formError && (
+                        <div style={{
+                          color: "#dc2626",
+                          background: "#fee2e2",
+                          padding: "6px 12px",
+                          borderRadius: 8,
+                          fontSize: 15,
+                          margin: "8px 0"
+                        }}>
+                          {formError}
+                        </div>
+                      )}
                       <div className="daily-flex">
                         <button
                           className="daily-btn-main"
@@ -457,7 +514,7 @@ export default function StoneDailyReport() {
                         <button
                           className="daily-btn-alt daily-btn-small"
                           style={{ marginLeft: 8 }}
-                          onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); }}
+                          onClick={() => { setIsAdding(false); setEditIndex(null); setKolvo(""); setFormError(""); }}
                         >
                           Завершить редактирование
                         </button>
